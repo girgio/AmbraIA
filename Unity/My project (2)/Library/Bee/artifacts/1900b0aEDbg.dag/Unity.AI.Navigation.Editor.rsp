@@ -138,6 +138,7 @@
 -define:CSHARP_7_OR_LATER
 -define:CSHARP_7_3_OR_NEWER
 -define:UNITY_EDITOR_ONLY_COMPILATION
+-r:"Assets/Packages/Microsoft.CodeAnalysis.CSharp.5.0.0/lib/netstandard2.0/Microsoft.CodeAnalysis.CSharp.dll"
 -r:"Assets/Packages/Microsoft.CodeAnalysis.Common.5.0.0/lib/netstandard2.0/Microsoft.CodeAnalysis.dll"
 -r:"Assets/Packages/System.Collections.Immutable.9.0.0/lib/netstandard2.0/System.Collections.Immutable.dll"
 -r:"Assets/Packages/System.Reflection.Metadata.9.0.0/lib/netstandard2.0/System.Reflection.Metadata.dll"
