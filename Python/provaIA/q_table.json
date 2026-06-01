@@ -1,0 +1,72 @@
+{
+  "Cibo_medio_sazio": {
+    "move": 4.0095,
+    "eat_food": 0.0723,
+    "cook": 0.532,
+    "sit_down": 0.5362,
+    "do_nothing": 0.0
+  },
+  "Cibo_vicino_sazio": {
+    "move": -0.3,
+    "eat_food": 2.6085,
+    "cook": 0.5896,
+    "sit_down": 0.149,
+    "do_nothing": 0.3367
+  },
+  "Ingrediente_medio_affamato": {
+    "move": 1.5624,
+    "eat_food": 1.0273,
+    "cook": 0.1637,
+    "sit_down": 0.0,
+    "do_nothing": -0.051
+  },
+  "Ingrediente_medio_molto_affamato": {
+    "move": 0.0,
+    "eat_food": -0.3,
+    "cook": 0.0,
+    "sit_down": 0.0,
+    "do_nothing": 0.0
+  },
+  "Cibo_medio_molto_affamato": {
+    "move": 0.3,
+    "eat_food": 0.5499,
+    "cook": -0.429,
+    "sit_down": 0.0,
+    "do_nothing": -0.051
+  },
+  "Cibo_medio_affamato": {
+    "move": 0.6064,
+    "eat_food": 2.0406,
+    "cook": -0.3,
+    "sit_down": -0.2635,
+    "do_nothing": 0.9672
+  },
+  "Ingrediente_medio_sazio": {
+    "move": 4.0978,
+    "eat_food": -0.2937,
+    "cook": 0.1944,
+    "sit_down": -0.3,
+    "do_nothing": 0.1077
+  },
+  "Ingrediente_vicino_sazio": {
+    "move": -0.3,
+    "eat_food": -0.2046,
+    "cook": 3.056,
+    "sit_down": 0.6189,
+    "do_nothing": 0.0
+  },
+  "Ingrediente_vicino_affamato": {
+    "move": 0.0229,
+    "eat_food": 0.7747,
+    "cook": 0.3,
+    "sit_down": 0.0,
+    "do_nothing": 0.475
+  },
+  "Cibo_vicino_affamato": {
+    "move": 0.0,
+    "eat_food": 0.6514,
+    "cook": 0.0,
+    "sit_down": 0.0,
+    "do_nothing": 0.0
+  }
+}
