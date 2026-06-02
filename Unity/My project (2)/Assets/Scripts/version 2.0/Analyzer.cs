@@ -20,6 +20,7 @@ public class SceneAnalyzer : MonoBehaviour
         public string name;
         public string tag;
         public float distance;
+        public string available_action; // <--- AGGIUNTO: Ora Python saprà l'azione!
     }
 
     [System.Serializable]
@@ -28,7 +29,7 @@ public class SceneAnalyzer : MonoBehaviour
         public string npc_goal;
         public float npc_fame;
         public List<ContextObject> oggetti_vicini;
-        public string compile_error; // <--- AGGIUNTO: Permette di mandare l'errore a Python
+        public string compile_error;
     }
 
     [System.Serializable]
@@ -40,23 +41,22 @@ public class SceneAnalyzer : MonoBehaviour
         public string code;
     }
 
-    // Abbiamo aggiunto il parametro opzionale "error"
     public string GatherSceneData(string error = "")
     {
         SceneReport report = new SceneReport();
-        report.compile_error = error; // <--- Se c'è un errore, lo inseriamo nel report!
+        report.compile_error = error;
 
         NPCController controller = GetComponent<NPCController>();
         if (controller != null)
         {
             report.npc_fame = controller.fame;
-            if (controller.fame > 0.6f)
+            if (controller.fame > 1f)
             {
                 report.npc_goal = "Trova qualcosa da mangiare perché ho molta fame";
             }
             else
             {
-                report.npc_goal = "Esplora l'ambiente circostante e pattuglia la zona";
+                report.npc_goal = "Comportati in modo realistico a seconda della scena";
             }
         }
         else
@@ -78,6 +78,20 @@ public class SceneAnalyzer : MonoBehaviour
             obj.name = collider.gameObject.name;
             obj.tag = collider.tag;
             obj.distance = Vector3.Distance(transform.position, collider.transform.position);
+
+            // CORREZIONE 1: Cerchiamo lo script sul collider (l'oggetto 3D vero), non su obj
+            InteractableObject interactable = collider.gameObject.GetComponent<InteractableObject>();
+
+            string azioneDisponibile = "Nessuna";
+
+            // Se l'oggetto ha il nostro script attaccato, leggiamo la sua azione!
+            if (interactable != null)
+            {
+                azioneDisponibile = interactable.actionName;
+            }
+
+            // CORREZIONE 2: Assegniamo l'azione al nostro oggetto da inviare a Python!
+            obj.available_action = azioneDisponibile;
 
             if (!report.oggetti_vicini.Exists(x => x.name == obj.name))
             {
@@ -108,20 +122,13 @@ public class SceneAnalyzer : MonoBehaviour
                 {
                     Debug.Log("[UNITY -> ROSLYN] Tentativo di compilazione...");
 
-                
                     Debug.Log("<color=yellow>[CODICE IA GENERATO]:</color>\n" + serverData.code);
 
-                    Debug.Log("[UNITY -> ROSLYN] Tentativo di compilazione...");
                     string risultatoCompilazione = compiler.CompileAndAttachCode(serverData.code, this.gameObject);
                     if (!string.IsNullOrEmpty(risultatoCompilazione))
                     {
-                        // SE LA COMPILAZIONE È FALLITA:
                         Debug.LogError($"[UNITY] Rilevato errore Roslyn: {risultatoCompilazione}. Attivo l'auto-correzione...");
-
-                        // 1. Rigeneriamo il JSON includendo l'errore appena avvenuto
                         string jsonConErrore = GatherSceneData(risultatoCompilazione);
-
-                        // 2. Chiamata automatica ricorsiva! Spediamo l'errore a Python immediatamente
                         StartCoroutine(SendDataToServer(jsonConErrore));
                     }
                     else
@@ -141,7 +148,7 @@ public class SceneAnalyzer : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            string jsonScena = GatherSceneData(); // Prima chiamata (senza errori)
+            string jsonScena = GatherSceneData();
             StartCoroutine(SendDataToServer(jsonScena));
         }
     }

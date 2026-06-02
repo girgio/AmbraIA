@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from typing_extensions import TypedDict
 import requests
 from langgraph.graph import StateGraph, START, END
 
 app = FastAPI()
-
 
 # --- STATE MANAGEMENT ---
 class AgentState(TypedDict):
@@ -17,35 +16,34 @@ class AgentState(TypedDict):
     generated_code: str
     compile_error: str
 
-
 # --- PYDANTIC SCHEMAS ---
-class OggettoVicino(BaseModel):
+class ContextObject(BaseModel):
     name: str
     tag: str
     distance: float
-
+    available_action: str
 
 class ReportScena(BaseModel):
     npc_goal: str
     npc_fame: float
-    oggetti_vicini: List[OggettoVicino]
+    oggetti_vicini: List[ContextObject]
+    compile_error: Optional[str] = None
 
-
-# --- NODO 1: SCENE ANALYZER ---
+# --- NODO 1: SCENE ANALYZER (Blindato) ---
 def scene_analyzer_node(state: AgentState) -> Dict[str, Any]:
     print("\n--- [LANGGRAPH] 1. Esecuzione: SCENE ANALYZER ---")
     npc_goal = state["npc_goal"]
     raw_scene = state["raw_scene_data"]
 
     system_prompt = (
-        "Sei lo 'Scene Analyzer' di un NPC autonomo in Unity. Il tuo compito è leggere i dati grezzi della scena "
-        "e l'obiettivo attuale dell'NPC. Devi eliminare gli oggetti irrilevanti e restituire "
-        "un riassunto testuale brevissimo (massimo due righe), focalizzato SOLO su ciò che serve all'NPC per raggiungere il suo obiettivo.\n\n"
-        "Regola: Sii conciso, parla in italiano. Non inventare oggetti."
+        "Sei lo 'Scene Analyzer' di un NPC in un VIDEOGIOCO 3D SIMULATO (Unity). Non è il mondo reale.\n"
+        "Il tuo compito è leggere i dati grezzi della scena e restituire un riassunto testuale brevissimo della scena, non devi dare azioni descrivi solo la scena(massimo tre righe).\n"
+        "Regola TASSATIVA: Basati SOLO ed ESCLUSIVAMENTE sugli oggetti presenti nella lista grezza in input. "
+        "È SEVERAMENTE VIETATO inventare oggetti, nomi o azioni non presenti. Sii un puro filtro dati. Parla in italiano."
     )
 
     oggetti_testo = "\n".join([
-        f"- {obj['name']} (Tag: {obj['tag']}), Distanza: {obj['distance']:.2f}m"
+        f"- {obj['name']} (Tag: {obj['tag']}), Distanza: {obj['distance']:.2f}m, Azione Possibile: '{obj['available_action']}'"
         for obj in raw_scene["oggetti_vicini"]
     ])
 
@@ -54,7 +52,15 @@ def scene_analyzer_node(state: AgentState) -> Dict[str, Any]:
     try:
         response = requests.post(
             "http://localhost:11434/api/generate",
-            json={"model": "llama3.1", "prompt": system_prompt + prompt_completo, "stream": False}
+            json={
+                "model": "llama3.1",
+                "prompt": system_prompt + prompt_completo,
+                "stream": False,
+                "options": {
+                    "temperature": 0.0,  # <--- AZZERATO: Impedisce l'allucinazione di oggetti
+                    "top_p": 0.1
+                }
+            }
         )
         risposta_ia = response.json().get("response", "").strip()
     except Exception as e:
@@ -63,30 +69,35 @@ def scene_analyzer_node(state: AgentState) -> Dict[str, Any]:
     print(f"[ANALYZER] Risultato:\n{risposta_ia}")
     return {"scene_summary": risposta_ia}
 
-
-# --- NODO 2: PLANNER (Nuovo!) ---
+# --- NODO 2: PLANNER (Blindato) ---
 def planner_node(state: AgentState) -> Dict[str, Any]:
     print("\n--- [LANGGRAPH] 2. Esecuzione: PLANNER ---")
     npc_goal = state["npc_goal"]
     scene_summary = state["scene_summary"]
 
     system_prompt = (
-        "Sei il 'Planner' strategico di un NPC in Unity. Il tuo compito è prendere l'obiettivo principale "
-        "dell'NPC e il riassunto della scena circostante, e scomporre l'obiettivo in una sequenza ordinata "
-        "di micro-compiti semplici in lingua italiana.\n\n"
+        "Sei il 'Planner' strategico di un personaggio virtuale dentro un VIDEOGIOCO 3D (Unity). "
+        "Scomponi l'obiettivo in azioni logiche sequenziali, basati su gli oggetti interagibili.\n\n"
         "Regole TASSATIVE:\n"
-        "1. Restituisci le azioni come un elenco numerato (es. 1. Azione, 2. Azione).\n"
-        "2. Ogni micro-compito deve essere semplice (es. 'Cammina verso il Pomodoro', 'Mangia il pomodoro').\n"
-        "3. NON scrivere codice C#, solo logica in linguaggio naturale.\n"
-        "4. Sii diretto, non aggiungere introduzioni come 'Ecco il piano:'."
+        "1. Restituisci le azioni come elenco numerato.\n"
+        "2. Puoi pianificare di usare un oggetto SOLO se l'oggetto è esplicitamente menzionato nella Visione della Scena.\n"
+        "3. NON scrivere codice, solo logica in italiano."
     )
 
-    prompt_completo = f"Obiettivo Finale: \"{npc_goal}\"\nVisione della Scena:\n{scene_summary}\n\nGenera la sequenza di azioni numerata:"
+    prompt_completo = f"Obiettivo Finale: \"{npc_goal}\"\nVisione della Scena:\n{scene_summary}\n\nGenera il piano:"
 
     try:
         response = requests.post(
             "http://localhost:11434/api/generate",
-            json={"model": "llama3.1", "prompt": system_prompt + prompt_completo, "stream": False}
+            json={
+                "model": "llama3.1",
+                "prompt": system_prompt + prompt_completo,
+                "stream": False,
+                "options": {
+                    "temperature": 0.0,  # <--- AZZERATO: Previene risposte fuori tracciato
+                    "top_p": 0.1
+                }
+            }
         )
         piano_generato = response.json().get("response", "").strip()
     except Exception as e:
@@ -95,55 +106,47 @@ def planner_node(state: AgentState) -> Dict[str, Any]:
     print(f"[PLANNER] Piano d'azione generato:\n{piano_generato}")
     return {"current_plan": piano_generato}
 
-
+# --- NODO 3: BUILDER (Super Protetto contro ogni allucinazione) ---
 def builder_node(state: AgentState) -> Dict[str, Any]:
-    print("\n--- [LANGGRAPH] 3. Esecuzione: BUILDER (Leggi della Fisica) ---")
+    print("\n--- [LANGGRAPH] 3. Esecuzione: BUILDER (Modalità Restrittiva) ---")
 
     scene_summary = state["scene_summary"]
     current_plan = state["current_plan"]
     raw_data = state.get("raw_scene_data", {})
 
-    oggetti_rilevati = [obj["name"] for obj in raw_data.get("oggetti_vicini", [])]
-    lista_oggetti_stringa = ", ".join(
-        [f"'{name}'" for name in oggetti_rilevati]) if oggetti_rilevati else "Nessun oggetto rilevato"
+    oggetti_rilevati = [f"{obj['name']} (Azione valida: '{obj['available_action']}')" for obj in raw_data.get("oggetti_vicini", [])]
+    lista_oggetti_stringa = "\n".join(oggetti_rilevati) if oggetti_rilevati else "Nessun oggetto rilevato"
 
     system_prompt = f"""
 Sei il 'Builder' di codice C# per Unity. Devi tradurre il piano d'azione in uno script C# chiamato 'AiAction'.
 
-[REGOLE DI STRUTTURA E FISICA TASSATIVE]
+[REGOLE DI STRUTTURA TASSATIVE]
 1. Inserisci in cima: using UnityEngine; e using System.Collections;
 2. Nome classe: 'AiAction' (eredita da MonoBehaviour).
-3. In Start() avvia solo la coroutine: 'StartCoroutine(ExecutePlan());'.
-4. In ExecutePlan() recupera subito il controller:
+3. In Start() avvia la coroutine: 'StartCoroutine(ExecutePlan());'.
+4. All'inizio di ExecutePlan() devi inserire REQUISITO TASSATIVO questa esatta dichiarazione per il controller:
    NPCController controller = GetComponent<NPCController>();
    if (controller == null) {{ yield break; }}
 
-[LEGGI DEL MONDO - VIETATO RIGIDAMENTE]
-- NON creare MAI nuove funzioni o metodi personalizzati (NO 'void MoveToTarget', NO 'void Mangia'). Tutto deve stare dentro ExecutePlan().
-- L'UNICO modo per spostarsi è usare la funzione del controller: controller.MoveToTarget("nome"); seguita da un yield return new WaitForSeconds(4f);
-- È SEVERAMENTE VIETATO modificare la posizione di oggetti strutturali o grandi come 'Tavolo' o 'Pavimento'. Non puoi teletrasportare i mobili!
+[LIMITAZIONI SUL CODICE - DIVIETO ASSOLUTO DI INVENTARE]
+La classe del controller si chiama 'NPCController'. È SEVERAMENTE VIETATO inventare altri nomi come 'BPS_Controller' o 'AiController'.
+Non puoi usare GameObject.Find o SetActive. 
+Hai a disposizione SOLO ED ESCLUSIVAMENTE queste due funzioni del controller:
+- controller.MoveToTarget("NOME_OGGETTO");
+- controller.InteractWith("NOME_OGGETTO", "NOME_AZIONE");
 
-[OGGETTI REALI NELLA SCENA]
-[{lista_oggetti_stringa}]
+Se sei troppo lontano da un oggetto avvicinati prima di interagire.
 
-[GUIDA ALL'INTERAZIONE CREATIVA (SOLO DENTRO EXECUTEPLAN)]
-Puoi usare il codice nativo Unity SOLO per interagire con piccoli oggetti bersaglio (come il pomodoro):
+[IL CICLO DI AZIONE OBBLIGATORIO]
+Quando interagisci, usa ESATTAMENTE questa struttura in 3 step dentro ExecutePlan():
+controller.MoveToTarget("NOME_OGGETTO");
+yield return new WaitForSeconds(3.5f); // ATTESA OBBLIGATORIA PER CAMMINARE
+controller.InteractWith("NOME_OGGETTO", "NOME_AZIONE");
 
-* RACCOGLIERE/PRENDERE IN MANO UN OGGETTO (Lo attacca all'NPC o lo fa fluttuare vicino):
-  GameObject item = GameObject.Find("pomodoro");
-  if (item != null) {{
-      item.transform.position = transform.position + Vector3.up * 1.2f; // Fluttua davanti all'NPC
-  }}
-  yield return new WaitForSeconds(1f);
+[OGGETTI E AZIONI VALIDE ORA NELLA SCENA]
+{lista_oggetti_stringa}
 
-* MANGIARE/CONSUMARE UN OGGETTO:
-  controller.ModifyStat("fame", -0.5f); // Riduce la fame
-  GameObject item = GameObject.Find("pomodoro");
-  if (item != null) {{ item.SetActive(false); }} // Il cibo sparisce perché è stato mangiato
-
-* MODIFICARE DIMENSIONI O COLORE (Solo del piccolo oggetto interagito):
-  GameObject item = GameObject.Find("pomodoro");
-  if (item != null) {{ item.transform.localScale *= 0.8f; }}
+(Alla fine del metodo ExecutePlan, scrivi sempre: Destroy(this); yield break;)
 """
 
     prompt_completo = f"""
@@ -151,7 +154,7 @@ Visione della Scena: {scene_summary}
 Piano da eseguire:
 {current_plan}
 
-Genera il codice C# pulito per la classe 'AiAction':
+Genera SOLO il codice C# pulito per la classe 'AiAction':
 """
 
     try:
@@ -162,7 +165,7 @@ Genera il codice C# pulito per la classe 'AiAction':
                 "prompt": system_prompt + prompt_completo,
                 "stream": False,
                 "options": {
-                    "temperature": 0.0,  # Azzeriamo la fantasia per costringerla a seguire le regole
+                    "temperature": 0.0,
                     "top_p": 0.1
                 }
             }
@@ -174,108 +177,64 @@ Genera il codice C# pulito per la classe 'AiAction':
         elif "```" in codice_csharp:
             codice_csharp = codice_csharp.split("```")[1].split("```")[0].strip()
 
+        # ---------------------------------------------------------------------------------
+        # TRUCCO DI SICUREZZA TOTALE: Intercettiamo TUTTE le varianti inventate da Llama
+        nomi_allucinati = ["BPS_Controller", "AiController", "AIController", "NpcController", "NPC_Controller"]
+        for nome_falso in nomi_allucinati:
+            if nome_falso in codice_csharp:
+                print(f"[BUILDER - WARNING] Intercettata allucinazione '{nome_falso}'. Sostituisco forzatamente con 'NPCController'.")
+                codice_csharp = codice_csharp.replace(nome_falso, "NPCController")
+        # ---------------------------------------------------------------------------------
+
     except Exception as e:
         codice_csharp = f"// Errore Builder: {str(e)}"
 
-    print(f"[BUILDER] Codice C# generato rispettando le leggi della fisica.")
+    print(f"[BUILDER] Codice C# generato con successo.")
     return {"generated_code": codice_csharp}
 
-# --- NODO 4: INSPECTOR (Il Revisore) ---
+# --- NODO 4: INSPECTOR ---
 def inspector_node(state: AgentState) -> Dict[str, Any]:
     print("\n--- [LANGGRAPH] 4. Esecuzione: INSPECTOR ---")
-
-    # Se Unity ci ha mandato un errore, lo notifichiamo nel flusso
     if state.get("compile_error"):
         print(f"[INSPECTOR] Rilevato errore di compilazione: {state['compile_error']}")
-        print("[INSPECTOR] Chiedo al Builder di correggere il codice...")
-
-        # Iniettiamo l'errore nel piano corrente per forzare il Builder a leggerlo
-        correzione_prompt = f"\n\n[ATTENZIONE - IL TUO CODICE PRECEDENTE È FALLITO]:\nErrore del compilatore Unity: {state['compile_error']}\nCorreggi questo errore strutturale nello script che stai per generare!"
-
+        correzione_prompt = f"\n\n[ATTENZIONE - IL CODICE È FALLITO]:\nErrore Unity: {state['compile_error']}\nCorreggi lo script attenendoti RIGOROSAMENTE alle funzioni consentite."
         return {
             "current_plan": state["current_plan"] + correzione_prompt,
-            "compile_error": ""  # Resettiamo l'errore così non andiamo in loop infinito
+            "compile_error": ""
         }
-
     print("[INSPECTOR] Nessun errore rilevato. Codice approvato!")
     return state
 
-
-# Funzione logica per decidere dove andare dopo l'Inspector
+# --- ROUTING E GRAFO ---
 def decide_next_step(state: AgentState):
-    # Se il Builder ha appena rigenerato il codice a causa di un errore,
-    # facciamo passare di nuovo lo script dall'Inspector per sicurezza.
-    # Se tutto è pulito, andiamo alla fine (END).
     if "ATTENZIONE" in state["current_plan"]:
         return "builder"
     return END
 
-# --- COSTRUZIONE DEL GRAFO DI LANGGRAPH ---
-# Aggiorna lo stato per ospitare il codice generato
-class AgentState(TypedDict):
-    npc_goal: str
-    raw_scene_data: Dict[str, Any]
-    scene_summary: str
-    current_plan: str
-    generated_code: str  # <--- Aggiunto!
-
-
-
 workflow = StateGraph(AgentState)
-
-# Registriamo tutti i nodi
 workflow.add_node("scene_analyzer", scene_analyzer_node)
 workflow.add_node("planner", planner_node)
 workflow.add_node("builder", builder_node)
-workflow.add_node("inspector", inspector_node) # <--- Nuovo nodo!
+workflow.add_node("inspector", inspector_node)
 
-# Colleghiamo i nodi fisici
 workflow.add_edge(START, "scene_analyzer")
 workflow.add_edge("scene_analyzer", "planner")
 workflow.add_edge("planner", "builder")
-workflow.add_edge("builder", "inspector") # Il builder manda sempre all'inspector
-
-# ROUTING CONDIZIONALE: L'Inspector decide se tornare al Builder o finire
-workflow.add_conditional_edges(
-    "inspector",
-    decide_next_step,
-    {
-        "builder": "builder", # Torna a compilare
-        END: END              # Tutto ok, manda a Unity
-    }
-)
+workflow.add_edge("builder", "inspector")
+workflow.add_conditional_edges("inspector", decide_next_step, {"builder": "builder", END: END})
 
 compiled_graph = workflow.compile()
 
-
-# --- AGGIORNAMENTO ENDPOINT FASTAPI ---
-from pydantic import BaseModel
-from typing import List, Optional
-
-
-class ContextObject(BaseModel):
-    name: str
-    tag: str
-    distance: float
-
-
-class ReportScena(BaseModel):
-    npc_goal: str
-    npc_fame: float
-    oggetti_vicini: List[ContextObject]
-    compile_error: Optional[str] = None
-
-
+# --- API ENDPOINT ---
 @app.post("/npc/decide")
 async def ricevi_scena_e_decidi(report: ReportScena):
-    # Inizializziamo lo stato includendo l'eventuale errore che arriva da Unity
     stato_iniziale: AgentState = {
         "npc_goal": report.npc_goal,
         "raw_scene_data": report.model_dump(),
         "scene_summary": "",
         "current_plan": "",
         "generated_code": "",
-        "compile_error": report.compile_error if report.compile_error else ""  # <--- Passiamo l'errore al grafo
+        "compile_error": report.compile_error if report.compile_error else ""
     }
 
     stato_finale = compiled_graph.invoke(stato_iniziale)
@@ -286,8 +245,6 @@ async def ricevi_scena_e_decidi(report: ReportScena):
         "code": stato_finale["generated_code"]
     }
 
-
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="127.0.0.1", port=8000)
