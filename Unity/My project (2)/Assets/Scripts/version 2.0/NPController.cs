@@ -1,176 +1,269 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class NPCController : MonoBehaviour
 {
-    private NavMeshAgent agent;
-    private Animator animator;
-    private AnimatorOverrideController overrideController;
+    [Header("Statistiche NPC (0 = OK, 1 = Bisogno Massimo)")]
+    [Range(0f, 1f)] public float fame = 0.4f;
+    [Range(0f, 1f)] public float energy = 0.3f;
 
-    // Le tue statistiche
-    public float fame = 0.7f;
+    [Header("Configurazione Fisiologica")]
+    public float consumoFamePassivo = 0.005f;
+    public float consumoEnergiaMovimento = 0.015f;
+    public float consumoEnergiaIdle = 0.002f;
+    public float sogliaCritica = 0.7f;
+    public float cooldownPianificazione = 3.0f;
+
+    [Header("Configurazione Interazione")]
+    public float navMeshReanchorRadius = 2.0f;
+
+    private NavMeshAgent _agent;
+    private Animator _animator;
+    private AnimatorOverrideController _overrideController;
+    private Dictionary<string, GameObject> _interactableRegistry = new Dictionary<string, GameObject>();
+    private SceneAnalyzer _analyzer;
+
+    private float _lastPlanningTime = -999f;
+    private bool _isPerformingAction = false;
 
     void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
+        _agent = GetComponent<NavMeshAgent>();
+        _animator = GetComponent<Animator>();
+        _analyzer = GetComponent<SceneAnalyzer>();
 
-       
-        if (animator != null && animator.runtimeAnimatorController != null)
+        if (_animator != null && _animator.runtimeAnimatorController != null)
         {
-            overrideController = new AnimatorOverrideController(animator.runtimeAnimatorController);
-            animator.runtimeAnimatorController = overrideController;
+            _overrideController = new AnimatorOverrideController(_animator.runtimeAnimatorController);
+            _animator.runtimeAnimatorController = _overrideController;
         }
+    }
+
+    void Start()
+    {
+        RefreshInteractableRegistry();
+        TriggerPlanning();
     }
 
     void Update()
     {
-        if (agent != null && animator != null)
+        if (_agent != null && _animator != null)
         {
-            float currentSpeed = 0f;
-            if (agent.speed > 0f)
-            {
-                currentSpeed = agent.velocity.magnitude / agent.speed;
-            }
-            if (currentSpeed < 0.01f) currentSpeed = 0f;
+            float speed = _agent.speed > 0f ? _agent.velocity.magnitude / _agent.speed : 0f;
+            _animator.SetFloat("Speed", speed < 0.01f ? 0f : speed);
+            SimulatePhysiology(speed > 0.1f);
+        }
 
-            animator.SetFloat("Speed", currentSpeed);
+        if (!_isPerformingAction && Time.time > _lastPlanningTime + cooldownPianificazione)
+        {
+            if (_analyzer != null && _analyzer.IsRequestInProgress)
+                return;
+
+            bool bisognoCritico = fame >= sogliaCritica || energy >= sogliaCritica;
+            bool nessunPianoAttivo = !_isPerformingAction;
+
+            if (nessunPianoAttivo)
+            {
+                TriggerPlanning();
+            }
         }
     }
 
-    // --- SKILL 1: MOVIMENTO ---
-    public void MoveToTarget(string targetName)
+    private void SimulatePhysiology(bool isMoving)
     {
-        GameObject targetObj = GameObject.Find(targetName);
-        if (targetObj == null)
-        {
-            Debug.LogError($"[NPCController] Bersaglio '{targetName}' non trovato nella scena!");
-            return;
-        }
+        fame = Mathf.Clamp01(fame + (consumoFamePassivo * Time.deltaTime));
+        float incrementoStanchezza = isMoving ? consumoEnergiaMovimento : consumoEnergiaIdle;
+        energy = Mathf.Clamp01(energy + (incrementoStanchezza * Time.deltaTime));
+    }
 
-        UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-
-       
-        if (!agent.enabled)
+    public void TriggerPlanning()
+    {
+        if (_analyzer != null)
         {
-            agent.enabled = true;
-        }
-
-        
-        if (!agent.isOnNavMesh)
-        {
-            UnityEngine.AI.NavMeshHit hit;
-            // Cerca un punto valido sul pavimento azzurro entro 3 metri
-            if (UnityEngine.AI.NavMesh.SamplePosition(transform.position, out hit, 3.0f, UnityEngine.AI.NavMesh.AllAreas))
-            {
-                agent.Warp(hit.position);
-            }
-        }
-
-       
-        if (agent.isOnNavMesh)
-        {
-            agent.SetDestination(targetObj.transform.position);
-            Debug.Log($"[NPCController] In movimento verso: {targetName}");
-        }
-        else
-        {
-            Debug.LogError("[NPCController] Impossibile muoversi: l'NPC è completamente fuori dalla mappa NavMesh!");
+            Debug.Log($"[NPCController] Richiesta pianificazione (Fame: {fame:F2}, Stanchezza: {energy:F2})");
+            _lastPlanningTime = Time.time;
+            _analyzer.TriggerPlanning();
         }
     }
 
-    // --- NUOVA SKILL: INTERAZIONE DINAMICA CON OGGETTI ---
+    public void RefreshInteractableRegistry()
+    {
+        _interactableRegistry.Clear();
+        foreach (var interactable in FindObjectsOfType<InteractableObject>())
+        {
+            string key = interactable.gameObject.name;
+            if (!_interactableRegistry.ContainsKey(key))
+                _interactableRegistry[key] = interactable.gameObject;
+        }
+        Debug.Log($"[NPCController] Registro aggiornato: {_interactableRegistry.Count} oggetti.");
+    }
+
+    public void RegisterInteractable(InteractableObject obj)
+    {
+        string key = obj.gameObject.name;
+        if (!_interactableRegistry.ContainsKey(key))
+            _interactableRegistry[key] = obj.gameObject;
+    }
+
+    private GameObject FindRegisteredObject(string targetName)
+    {
+        if (_interactableRegistry.TryGetValue(targetName, out GameObject found))
+            return found;
+
+        GameObject fallback = GameObject.Find(targetName);
+        if (fallback == null)
+            Debug.LogError($"[NPCController] Oggetto '{targetName}' non trovato.");
+        return fallback;
+    }
+
+    public IEnumerator MoveToTargetAndWait(string targetName)
+    {
+        _isPerformingAction = true;
+
+        if (_analyzer != null)
+        {
+            string record = $"Mi sono spostato verso {targetName}";
+            _analyzer.lastActions.Add(record);
+            if (_analyzer.lastActions.Count > 10)
+                _analyzer.lastActions.RemoveAt(0);
+
+            _analyzer.NotifyActionDone(record);
+        }
+
+        GameObject targetObj = FindRegisteredObject(targetName);
+
+        if (targetObj != null)
+        {
+            if (!_agent.enabled) _agent.enabled = true;
+            _agent.SetDestination(targetObj.transform.position);
+
+            while (_agent.pathPending || (_agent.remainingDistance > _agent.stoppingDistance))
+            {
+                yield return null;
+            }
+        }
+        _isPerformingAction = false;
+    }
+
+    public IEnumerator InteractWithAndWait(string objectName, string actionName)
+    {
+        _isPerformingAction = true;
+        GameObject targetObj = FindRegisteredObject(objectName);
+
+        if (targetObj != null)
+        {
+            InteractableObject interactable = targetObj.GetComponent<InteractableObject>();
+            if (interactable != null && string.Equals(interactable.actionName, actionName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (_analyzer != null)
+                {
+                    string record = $"{actionName} su {objectName}";
+                    _analyzer.lastActions.Add(record);
+                    if (_analyzer.lastActions.Count > 10)
+                        _analyzer.lastActions.RemoveAt(0);
+
+                    _analyzer.NotifyActionDone(record);
+                }
+
+                yield return StartCoroutine(ExecuteDynamicAction(interactable));
+            }
+        }
+        _isPerformingAction = false;
+    }
+
     public void InteractWith(string objectName, string actionName)
     {
-        GameObject targetObj = GameObject.Find(objectName);
-        if (targetObj == null) return;
-
-        InteractableObject interactable = targetObj.GetComponent<InteractableObject>();
-        if (interactable == null)
-        {
-            Debug.LogWarning($"L'oggetto {objectName} non ha il componente InteractableObject!");
-            return;
-        }
-
-        if (interactable.actionName.ToLower() == actionName.ToLower())
-        {
-            StartCoroutine(ExecuteDynamicAction(interactable));
-        }
+        StartCoroutine(InteractWithAndWait(objectName, actionName));
     }
 
     private IEnumerator ExecuteDynamicAction(InteractableObject interactable)
     {
-        if (agent == null || animator == null) yield break;
+        if (_agent == null || _animator == null) yield break;
 
-        // 1. Blocchiamo il movimento dell'agente, ma lo lasciamo ABILITATO (enabled = true)
-        agent.isStopped = true;
+        if (_agent.enabled && _agent.isOnNavMesh)
+            _agent.isStopped = true;
 
-        // 2. Lo "Snap" anticipato: Teletrasportiamo subito l'agente sul punto di interazione.
-        // Usando Warp qui, la fisica della NavMesh si sposta insieme al modello 3D senza arrabbiarsi.
+        _agent.enabled = false;
+
         if (interactable.interactionPoint != null)
         {
-            agent.Warp(interactable.interactionPoint.position);
+            transform.position = interactable.interactionPoint.position;
             transform.rotation = interactable.interactionPoint.rotation;
         }
 
-        // 3. SOVRASCRITTURA ANIMAZIONE
-        if (interactable.interactionAnimation != null && overrideController != null)
+        if (interactable.interactionAnimation != null && _overrideController != null)
+            _overrideController["Idle"] = interactable.interactionAnimation;
+
+        _animator.SetTrigger("AvviaInterazione");
+        Debug.Log($"[NPCController] Interazione: '{interactable.actionName}' su {interactable.gameObject.name}");
+
+        float duration = interactable.interactionAnimation != null ? interactable.interactionAnimation.length : 2.0f;
+        yield return new WaitForSeconds(duration);
+
+        ApplyInteractionEffects(interactable);
+
+        _agent.enabled = true;
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, navMeshReanchorRadius, NavMesh.AllAreas))
         {
-            overrideController["Idle"] = interactable.interactionAnimation;
+            _agent.Warp(hit.position);
+        }
+        else
+        {
+            Debug.LogWarning($"[NPCController] Nessun punto NavMesh valido dopo '{interactable.gameObject.name}'.");
         }
 
-        // 4. Avviamo l'animazione della sedia
-        animator.SetTrigger("AvviaInterazione");
-        Debug.Log($"[INTERAZIONE] Sto eseguendo l'azione '{interactable.actionName}' su {interactable.gameObject.name}");
+        if (_agent.isOnNavMesh)
+            _agent.isStopped = false;
 
-        // Aspetta la fine dell'animazione
-        yield return new WaitForSeconds(interactable.interactionAnimation.length);
-
-        // 5. FINE ANIMAZIONE: Visto che l'agente non è mai stato spento, non c'è NESSUN teletrasporto fantasma!
-        // Diciamo semplicemente all'NPC che è libero di camminare di nuovo se riceverà nuovi ordini.
-        if (agent.isOnNavMesh)
-        {
-            agent.isStopped = false;
-        }
-
-        Debug.Log("[INTERAZIONE] Azione terminata. L'NPC è rimasto perfettamente sul posto.");
+        Debug.Log("[NPCController] Azione completata.");
     }
 
-    // --- SKILL 2: ANIMAZIONE VECCHIA (Mantenuta per compatibilità) ---
-    public void Animate(string animationName)
+    private void ApplyInteractionEffects(InteractableObject interactable)
     {
-        if (animator != null)
+        if (interactable.fameEffect != 0f)
         {
-            Debug.Log($"[SKILL] Avvio animazione standard: {animationName}");
-            animator.SetTrigger(animationName);
+            ModifyStat("fame", interactable.fameEffect);
+        }
+
+        if (interactable.energyEffect != 0f)
+        {
+            ModifyStat("energy", interactable.energyEffect);
         }
     }
 
-    // --- SKILL 3: MODIFICA STATISTICHE ---
     public void ModifyStat(string statName, float value)
     {
-        if (statName.ToLower() == "fame")
+        switch (statName.ToLower())
         {
-            fame = Mathf.Clamp01(fame + value);
-            Debug.Log($"[SKILL] Nuova fame dell'NPC: {fame}");
+            case "fame":
+                fame = Mathf.Clamp01(fame + value);
+                Debug.Log($"[NPCController] Fame: {fame:F2}");
+                break;
+            case "energy":
+            case "energia":
+                energy = Mathf.Clamp01(energy + value);
+                Debug.Log($"[NPCController] Stanchezza: {energy:F2}");
+                break;
         }
     }
 
     public Vector3 GetTargetPosition()
     {
-        if (agent != null && agent.enabled && agent.hasPath)
-        {
-            return agent.destination;
-        }
-        return transform.position; // Se è fermo, restituisce la sua posizione attuale
+        if (_agent != null && _agent.enabled && _agent.hasPath)
+            return _agent.destination;
+        return transform.position;
     }
 
-    // --- SE L'LLM CERCA UN METODO DI MOVIMENTO CHE DA' UN CONSENSO BOOL ---
-    // Questa versione di sicurezza fa muovere l'NPC e restituisce 'true' se l'operazione è avviata
-    public bool MoveToTargetWithCheck(string targetName)
+    public float GetFame()
     {
-        MoveToTarget(targetName); // Chiama la tua skill 1 originale
-        return agent != null && agent.enabled && agent.isOnNavMesh;
+        return fame;
+    }
+
+    public float GetEnergy()
+    {
+        return energy;
     }
 }

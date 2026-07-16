@@ -10,6 +10,10 @@ TagManager:
   - Interactable
   - tavolo
   - Muro
+  - Letto
+  - Mobile
+  - Cestino
+  - Dummy
   layers:
   - Default
   - TransparentFX
