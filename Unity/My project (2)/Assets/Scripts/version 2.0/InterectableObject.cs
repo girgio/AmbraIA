@@ -15,7 +15,14 @@ public class InteractableObject : MonoBehaviour
     [Header("Effetti Fisiologici (valore negativo = riduce il bisogno)")]
     public float fameEffect = 0f;      // es. -0.5 riduce la fame di 0.5
     public float energyEffect = 0f;    // es. -0.6 riduce la stanchezza di 0.
+    
+    public GameObject oggettoDaAttivare;
 
+    public void DopoInterazione()
+    {
+        if (oggettoDaAttivare != null)
+            oggettoDaAttivare.SetActive(true);
+    }
 
 
     void OnEnable()

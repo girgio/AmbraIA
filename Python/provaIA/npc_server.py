@@ -370,15 +370,15 @@ def planner_node(state: AgentState) -> Dict[str, Any]:
         "1. GOAL: un obiettivo di alto livello in una frase (es. 'Mantenermi in salute', 'Esplorare la zona')\n"
         "2. SOTTO-OBIETTIVI: 1-3 passi per raggiungere il goal, ciascuno con priorita' (ALTA, MEDIA, BASSA)\n"
         "3. AZIONI CONCRETE: per ogni sotto-obiettivo, la sequenza di azioni\n\n"
-        "REGOLE:\n"
+       "REGOLE:\n"
         "- Usa SOLO oggetti nella sezione 'Oggetti con cui puoi INTERAGIRE'\n"
         "- Ogni interazione richiede: prima raggiungi l'oggetto, poi interagisci\n"
         "- Se fame >= 0.7, soddisfare la fame e' PRIORITA' ASSOLUTA\n"
         "- Se stanchezza >= 0.7, riposarsi e' PRIORITA' ASSOLUTA\n"
         "- NON ripetere azioni gia' presenti nelle azioni recenti\n"
         "- Usa i ricordi recuperati per non ripetere errori passati\n"
-        "- Se le riflessioni suggeriscono di cambiare abitudini, seguile\n"
-        "- Se non ci sono bisogni urgenti, pianifica attivita' esplorative o sociali\n"
+        "- Se le riflessioni dicono che stai ripetendo sempre le stesse azioni, DEVI variare. Scegli oggetti che non hai ancora usato.\n"
+        "- Se non ci sono bisogni urgenti, PROVA azioni nuove: esplora stanze diverse, usa oggetti che non hai mai toccato.\n"
         "- Massimo 3 sotto-obiettivi, massimo 4 azioni totali\n\n"
         "FORMATO RISPOSTA:\n"
         "GOAL: <obiettivo>\n"
@@ -398,8 +398,21 @@ def planner_node(state: AgentState) -> Dict[str, Any]:
         "Genera il piano gerarchico:"
     )
 
+    prompt += "\n\nSUGGERIMENTO: Ci sono oggetti che non hai mai usato. Prova ad esplorarli per scoprire cosa fanno."
+
+    oggetti_usati = set()
+    for action in state["last_actions"]:
+        for nome in state["valid_object_names"]:
+            if nome in action:
+                oggetti_usati.add(nome)
+
+    if oggetti_usati:
+        oggetti_mai_usati = [n for n in state["valid_object_names"] if n not in oggetti_usati]
+        if oggetti_mai_usati:
+            prompt += f"\n\nOGGETTI CHE NON HAI ANCORA USATO (provali se non hai bisogni urgenti): {', '.join(oggetti_mai_usati)}"
+
     try:
-        piano = ollama.generate(system_prompt, prompt, temperature=0.3)
+        piano = ollama.generate(system_prompt, prompt, temperature=0.5)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore Planner: {e}")
 
@@ -536,7 +549,69 @@ def decide_next_step(state: AgentState) -> str:
         logger.error("[ROUTER] Tentativi esauriti.")
     return END
 
+# ---------------------------------------------------------------------------
+# Modelli per analisi scena
+# ---------------------------------------------------------------------------
+class OggettoSconosciuto(BaseModel):
+    name: str
+    tag: str
 
+class AnalyzeSceneRequest(BaseModel):
+    oggetti_sconosciuti: List[Dict[str, str]]
+    template_disponibili: List[Dict[str, Any]]
+
+
+@app.post("/npc/analyze-scene")
+async def analizza_scena(request: AnalyzeSceneRequest):
+    if not request.oggetti_sconosciuti:
+        return {"suggerimenti": []}
+
+    oggetti_text = "\n".join(
+        f"- Nome: '{o['name']}', Tag: '{o['tag']}'"
+        for o in request.oggetti_sconosciuti
+    )
+
+    template_text = "\n".join(
+        f"- {t['nome']}: azione='{t['azione']}', fame=[{t['fame_min']}..{t['fame_max']}], energy=[{t['energy_min']}..{t['energy_max']}]"
+        for t in request.template_disponibili
+    )
+
+    system_prompt = (
+        "Sei un analizzatore di scene 3D per Unity.\n"
+        "Per ogni oggetto, suggerisci il template InteractableObject piu' appropriato "
+        "e scegli un valore specifico per fame_effect e energy_effect DENTRO il range del template.\n\n"
+        "Considera il nome dell'oggetto e il suo tag.\n"
+        "Usa il buonsenso: una mela sazia meno di un piatto di pasta, "
+        "un divano e' piu' comodo di una sedia, un letto e' piu' riposante di una poltrona.\n\n"
+        "TEMPLATE DISPONIBILI (con range):\n"
+        f"{template_text}\n\n"
+        "Rispondi SOLO in formato JSON, con un array 'suggerimenti'. Ogni elemento deve avere:\n"
+        "- name: nome dell'oggetto\n"
+        "- template: nome del template scelto (o 'NonInteragibile')\n"
+        "- fame_effect: valore numerico dentro il range del template\n"
+        "- energy_effect: valore numerico dentro il range del template\n"
+        "- confidence: alta/media/bassa\n\n"
+        "Esempio:\n"
+        '{"suggerimenti": [{"name": "Mela", "template": "Cibo", "fame_effect": -0.3, "energy_effect": 0, "confidence": "alta"}]}'
+    )
+
+    prompt = (
+        f"Oggetti da analizzare:\n{oggetti_text}\n\n"
+        "Genera i suggerimenti in formato JSON."
+    )
+
+    try:
+        result = ollama.generate(system_prompt, prompt, temperature=0.0)
+        result = result.strip()
+        if "```json" in result:
+            result = result.split("```json")[1].split("```")[0]
+        elif "```" in result:
+            result = result.split("```")[1].split("```")[0]
+        suggerimenti = json.loads(result)
+        return suggerimenti
+    except Exception as e:
+        logger.error(f"[ANALYZE SCENE] Errore: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 # ==============================================================================
 # GRAFO LANGGRAPH
 # ==============================================================================
@@ -596,6 +671,7 @@ def maybe_reflect():
         result = ollama.generate(system_prompt, prompt, temperature=0.5)
         reflections = [r.strip("- ").strip() for r in result.split("\n") if r.strip()]
         reflections = [r for r in reflections if len(r) > 5][:3]
+        reflections = [r for r in reflections if not r.startswith("Ecco") and not r.startswith("Ecco tre")]
     except Exception as e:
         logger.warning(f"[REFLECTOR] Errore: {e}")
         return

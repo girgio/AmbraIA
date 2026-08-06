@@ -7,13 +7,13 @@ using UnityEngine.AI;
 public class NPCController : MonoBehaviour
 {
     [Header("Statistiche NPC (0 = OK, 1 = Bisogno Massimo)")]
-    [Range(0f, 1f)] public float fame = 0.4f;
+    [Range(0f, 1f)] public float fame = 0.3f;
     [Range(0f, 1f)] public float energy = 0.3f;
 
     [Header("Configurazione Fisiologica")]
-    public float consumoFamePassivo = 0.005f;
-    public float consumoEnergiaMovimento = 0.015f;
-    public float consumoEnergiaIdle = 0.002f;
+    public float consumoFamePassivo = 0.0007f;
+    public float consumoEnergiaMovimento = 0.007f;
+    public float consumoEnergiaIdle = 0.0004f;
     public float sogliaCritica = 0.7f;
     public float cooldownPianificazione = 3.0f;
 
@@ -74,9 +74,11 @@ public class NPCController : MonoBehaviour
 
     private void SimulatePhysiology(bool isMoving)
     {
+
         fame = Mathf.Clamp01(fame + (consumoFamePassivo * Time.deltaTime));
         float incrementoStanchezza = isMoving ? consumoEnergiaMovimento : consumoEnergiaIdle;
         energy = Mathf.Clamp01(energy + (incrementoStanchezza * Time.deltaTime));
+     
     }
 
     public void TriggerPlanning()
@@ -204,6 +206,7 @@ public class NPCController : MonoBehaviour
         yield return new WaitForSeconds(duration);
 
         ApplyInteractionEffects(interactable);
+        interactable.DopoInterazione();
 
         _agent.enabled = true;
         if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, navMeshReanchorRadius, NavMesh.AllAreas))

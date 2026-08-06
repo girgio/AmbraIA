@@ -404,6 +404,8 @@
 -r:"D:/fnaf/6000.3.11f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/System.dll"
 -r:"D:/fnaf/6000.3.11f1/Editor/Data/UnityReferenceAssemblies/unity-4.8-api/mscorlib.dll"
 -r:"Library/PackageCache/com.github-glitchenzo.nugetforunity@5e9f9e02b402/Editor/PluginAPI/NuGetForUnity.PluginAPI.dll"
+-r:"Library/Bee/artifacts/1900b0aEDbg.dag/UnityEditor.UI.ref.dll"
+-r:"Library/Bee/artifacts/1900b0aEDbg.dag/UnityEngine.UI.ref.dll"
 -analyzer:"Assets/Packages/Microsoft.CodeAnalysis.Analyzers.5.3.0/analyzers/dotnet/cs/Microsoft.CodeAnalysis.Analyzers.dll"
 -analyzer:"Assets/Packages/Microsoft.CodeAnalysis.Analyzers.5.3.0/analyzers/dotnet/cs/Microsoft.CodeAnalysis.CSharp.Analyzers.dll"
 -analyzer:"Assets/Packages/Microsoft.CodeAnalysis.Analyzers.5.3.0/analyzers/dotnet/cs/cs/Microsoft.CodeAnalysis.Analyzers.resources.dll"

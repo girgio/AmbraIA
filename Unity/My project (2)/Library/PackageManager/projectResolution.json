@@ -39,6 +39,16 @@
       "source": "builtin",
       "testable": false
     },
+    "com.unity.ugui@2.0.0": {
+      "name": "com.unity.ugui",
+      "displayName": "uGUI",
+      "resolvedPath": "C:\\Users\\Giovanni\\AmbraIA\\Unity\\My project (2)\\Library\\PackageCache\\com.unity.ugui@f17df9b1ab21",
+      "fingerprint": "f17df9b1ab21a9a2156e109eacf8dd2f65d03c8c",
+      "editorCompatibility": "2019.2.0a1",
+      "version": "2.0.0",
+      "source": "builtin",
+      "testable": false
+    },
     "com.unity.modules.accessibility@1.0.0": {
       "name": "com.unity.modules.accessibility",
       "displayName": "Accessibility",
