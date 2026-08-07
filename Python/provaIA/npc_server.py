@@ -560,7 +560,9 @@ class AnalyzeSceneRequest(BaseModel):
     oggetti_sconosciuti: List[Dict[str, str]]
     template_disponibili: List[Dict[str, Any]]
 
-
+# ---------------------------------------------------------------------------
+# ENDPOINT per analizzare una scena nuova
+# ---------------------------------------------------------------------------
 @app.post("/npc/analyze-scene")
 async def analizza_scena(request: AnalyzeSceneRequest):
     if not request.oggetti_sconosciuti:
@@ -632,7 +634,7 @@ compiled_graph = workflow.compile()
 
 
 # ==============================================================================
-# REFLECTOR (attivato dopo ogni azione, esegue ogni REFLECTION_INTERVAL)
+# REFLECTOR (attivato dopo ogni azione, eseguito ogni REFLECTION_INTERVAL)
 # ==============================================================================
 
 def maybe_reflect():
