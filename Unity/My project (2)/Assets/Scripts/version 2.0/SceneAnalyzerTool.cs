@@ -1,8 +1,11 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 using System.Collections;
+using UnityEditor.AI;
+using Newtonsoft.Json;
 
 #if UNITY_EDITOR
 public class SceneAnalyzerTool : EditorWindow
@@ -38,22 +41,72 @@ public class SceneAnalyzerTool : EditorWindow
             scrollPos = GUILayout.BeginScrollView(scrollPos);
             foreach (var t in templates)
             {
-                GUILayout.Label($"- {t.nomeTemplate} (azione: {t.actionName}, fame: [{t.fameEffectMin}..{t.fameEffectMax}], energy: [{t.energyEffectMin}..{t.energyEffectMax}])");
+                GUILayout.Label($"- {t.nomeTemplate} (azione: {t.actionName}, fame: [{t.fameEffectMin}..{t.fameEffectMax}], energia: [{t.energyEffectMin}..{t.energyEffectMax}])");
             }
             GUILayout.EndScrollView();
         }
 
         GUILayout.Space(20);
 
-        if (GUILayout.Button("Analizza Scena e Applica InteractableObject", GUILayout.Height(40)))
+        if (GUILayout.Button("Analizza Scena e Applica InteractableObject", GUILayout.Height(30)))
         {
             if (templates == null || templates.Length == 0)
             {
-                Debug.LogError("Nessun template trovato. Crea almeno un InteractableTemplate in Assets.");
+                Debug.LogError("Nessun template trovato.");
                 return;
             }
             AnalizzaScena();
         }
+
+        GUILayout.Space(10);
+
+ if (GUILayout.Button("Prepara Scena Completa (Analizza + NPC + NavMesh)", GUILayout.Height(40)))
+{
+    if (templates == null || templates.Length == 0)
+    {
+        Debug.LogError("Nessun template trovato.");
+        return;
+    }
+    PreparaScenaCompleta();
+}
+
+GUILayout.Space(10);
+
+if (GUILayout.Button("Pulisci Scena (rimuove tutti gli InteractableObject)", GUILayout.Height(30)))
+{
+    PulisciScena();
+}
+
+
+    GUILayout.Space(10);
+
+ }
+    void PulisciScena()
+    {
+        InteractableObject[] tutti = FindObjectsOfType<InteractableObject>();
+        int count = 0;
+        foreach (var io in tutti)
+        {
+            // Distrugge l'InteractionPoint figlio
+            if (io.interactionPoint != null && io.interactionPoint.parent == io.transform)
+            {
+                DestroyImmediate(io.interactionPoint.gameObject);
+            }
+            // Rimuove il componente
+            DestroyImmediate(io);
+            count++;
+        }
+        Debug.Log($"[PULISCI SCENA] Rimossi {count} InteractableObject.");
+    }
+
+    void PreparaScenaCompleta()
+    {
+        Debug.Log("[PREPARA SCENA] Inizio preparazione completa...");
+        AnalizzaScena();
+        AggiungiNPC();
+        PreparaOggettiPerNavMesh();
+        BakeNavMesh();
+        Debug.Log("[PREPARA SCENA] Preparazione completata.");
     }
 
     void AnalizzaScena()
@@ -84,7 +137,7 @@ public class SceneAnalyzerTool : EditorWindow
         }
 
         Debug.Log($"[ANALIZZA SCENA] Match automatico: {assegnazioni.Count} oggetti");
-        Debug.Log($"[ANALIZZA SCENA] Da inviare all'LLM per template + valori: {daAnalizzare.Count} oggetti");
+        Debug.Log($"[ANALIZZA SCENA] Da inviare all'LLM: {daAnalizzare.Count} oggetti");
 
         foreach (var coppia in assegnazioni)
         {
@@ -97,7 +150,7 @@ public class SceneAnalyzerTool : EditorWindow
         }
         else
         {
-            Debug.Log("[ANALIZZA SCENA] Tutti gli oggetti sono stati matchati automaticamente con valori medi.");
+            Debug.Log("[ANALIZZA SCENA] Tutti gli oggetti matchati automaticamente.");
         }
     }
 
@@ -137,7 +190,7 @@ public class SceneAnalyzerTool : EditorWindow
             io.interactionPoint = pointEsistente;
         }
 
-        Debug.Log($"[ANALIZZA SCENA] Applicato template '{template.nomeTemplate}' a '{obj.name}' (fame={fameVal}, energy={energyVal})");
+        Debug.Log($"[ANALIZZA SCENA] Applicato template '{template.nomeTemplate}' a '{obj.name}' (fame={fameVal}, energia={energyVal})");
     }
 
     void InviaAllLLM(List<GameObject> oggettiSconosciuti)
@@ -145,81 +198,109 @@ public class SceneAnalyzerTool : EditorWindow
         EditorCoroutine.Start(ChiamaServer(oggettiSconosciuti));
     }
 
-    IEnumerator ChiamaServer(List<GameObject> oggettiSconosciuti)
+IEnumerator ChiamaServer(List<GameObject> oggettiSconosciuti)
+{
+    List<Dictionary<string, string>> oggettiJson = new List<Dictionary<string, string>>();
+    foreach (var obj in oggettiSconosciuti)
     {
-        List<Dictionary<string, string>> oggettiJson = new List<Dictionary<string, string>>();
-        foreach (var obj in oggettiSconosciuti)
+        oggettiJson.Add(new Dictionary<string, string>
         {
-            oggettiJson.Add(new Dictionary<string, string>
-            {
-                {"name", obj.name},
-                {"tag", obj.tag}
-            });
-        }
-
-        List<Dictionary<string, object>> templateJson = new List<Dictionary<string, object>>();
-        foreach (var t in templates)
-        {
-            templateJson.Add(new Dictionary<string, object>
-            {
-                {"nome", t.nomeTemplate},
-                {"azione", t.actionName},
-                {"fame_min", t.fameEffectMin},
-                {"fame_max", t.fameEffectMax},
-                {"energy_min", t.energyEffectMin},
-                {"energy_max", t.energyEffectMax}
-            });
-        }
-
-        string jsonBody = JsonUtility.ToJson(new
-        {
-            oggetti_sconosciuti = oggettiJson,
-            template_disponibili = templateJson
+            {"name", obj.name},
+            {"tag", obj.tag}
         });
+    }
 
-        using (UnityWebRequest request = new UnityWebRequest("http://127.0.0.1:8000/npc/analyze-scene", "POST"))
+    List<Dictionary<string, object>> templateJson = new List<Dictionary<string, object>>();
+    foreach (var t in templates)
+    {
+        templateJson.Add(new Dictionary<string, object>
         {
-            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
+            {"nome", t.nomeTemplate},
+            {"azione", t.actionName},
+            {"fame_min", t.fameEffectMin},
+            {"fame_max", t.fameEffectMax},
+            {"energia_min", t.energyEffectMin},
+            {"energia_max", t.energyEffectMax}
+        });
+    }
 
-            yield return request.SendWebRequest();
+    var payload = new
+    {
+        oggetti_sconosciuti = oggettiJson,
+        template_disponibili = templateJson
+    };
+    string jsonBody = JsonConvert.SerializeObject(payload);
 
-            if (request.result != UnityWebRequest.Result.Success)
+    using (UnityWebRequest request = new UnityWebRequest("http://127.0.0.1:8000/npc/analyze-scene", "POST"))
+    {
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError($"[ANALIZZA SCENA] Errore HTTP: {request.error}");
+            Debug.LogError($"[ANALIZZA SCENA] Response code: {request.responseCode}");
+            Debug.LogError($"[ANALIZZA SCENA] Body inviato: {jsonBody}");
+            yield break;
+        }
+
+        string risposta = request.downloadHandler.text;
+        Debug.Log($"[ANALIZZA SCENA] Risposta LLM: {risposta}");
+
+        try
+        {
+            var wrapper = JsonConvert.DeserializeObject<Dictionary<string, object>>(risposta);
+            var suggerimenti = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(wrapper["suggerimenti"].ToString());
+
+            foreach (var sugg in suggerimenti)
             {
-                Debug.LogError($"[ANALIZZA SCENA] Errore HTTP: {request.error}");
-                yield break;
-            }
+                string nomeOggetto = sugg["name"].ToString();
+                string nomeTemplate = sugg["template"].ToString();
 
-            string risposta = request.downloadHandler.text;
-            Debug.Log($"[ANALIZZA SCENA] Risposta LLM: {risposta}");
+                if (nomeTemplate == "NonInteragibile")
+                {
+                    Debug.Log($"[ANALIZZA SCENA] '{nomeOggetto}' marcato come NonInteragibile, saltato.");
+                    continue;
+                }
 
-            foreach (var obj in oggettiSconosciuti)
-            {
+                InteractableTemplate templateTrovato = null;
                 foreach (var t in templates)
                 {
-                    if (risposta.Contains($"\"{obj.name}\"") && risposta.Contains($"\"{t.nomeTemplate}\""))
+                    if (t.nomeTemplate.ToLower() == nomeTemplate.ToLower())
                     {
-                        float fameVal = EstraiValore(risposta, obj.name, "fame_effect");
-                        float energyVal = EstraiValore(risposta, obj.name, "energy_effect");
-
-                        if (fameVal == 0f && energyVal == 0f)
-                        {
-                            fameVal = (t.fameEffectMin + t.fameEffectMax) / 2f;
-                            energyVal = (t.energyEffectMin + t.energyEffectMax) / 2f;
-                        }
-
-                        ApplicaTemplateConValori(obj, t, fameVal, energyVal);
+                        templateTrovato = t;
                         break;
                     }
                 }
+
+                if (templateTrovato == null)
+                {
+                    Debug.LogWarning($"[ANALIZZA SCENA] Template '{nomeTemplate}' non trovato per '{nomeOggetto}'.");
+                    continue;
+                }
+
+                float fameVal = Convert.ToSingle(sugg["fame_effect"]);
+                float energyVal = Convert.ToSingle(sugg["energy_effect"]);
+
+                GameObject obj = oggettiSconosciuti.Find(o => o.name == nomeOggetto);
+                if (obj != null)
+                {
+                    ApplicaTemplateConValori(obj, templateTrovato, fameVal, energyVal);
+                }
             }
-
-            Debug.Log("[ANALIZZA SCENA] Completato.");
         }
-    }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[ANALIZZA SCENA] Errore parsing risposta: {e.Message}");
+        }
 
+        Debug.Log("[ANALIZZA SCENA] Completato.");
+    }
+}
     float EstraiValore(string json, string nomeOggetto, string chiave)
     {
         string pattern = $"\"{nomeOggetto}\"";
@@ -243,6 +324,53 @@ public class SceneAnalyzerTool : EditorWindow
 
         return 0f;
     }
+
+    void AggiungiNPC()
+    {
+        NPCController npcEsistente = FindObjectOfType<NPCController>();
+        if (npcEsistente != null)
+        {
+            Debug.Log("[PREPARA SCENA] NPC gia' presente. Non lo aggiungo di nuovo.");
+            return;
+        }
+
+        GameObject npcPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/NPC_AmbraIA.prefab");
+        if (npcPrefab == null)
+        {
+            Debug.LogWarning("[PREPARA SCENA] Prefab NPC non trovato in Assets/Prefabs/NPC_AmbraIA.prefab.");
+            return;
+        }
+
+        GameObject npc = (GameObject)PrefabUtility.InstantiatePrefab(npcPrefab);
+        npc.transform.position = Vector3.zero;
+        Debug.Log("[PREPARA SCENA] NPC aggiunto alla scena.");
+    }
+
+    void PreparaOggettiPerNavMesh()
+    {
+        GameObject[] tutti = FindObjectsOfType<GameObject>();
+        int count = 0;
+        foreach (GameObject obj in tutti)
+        {
+            if (obj.isStatic)
+            {
+                StaticEditorFlags flags = GameObjectUtility.GetStaticEditorFlags(obj);
+                if ((flags & StaticEditorFlags.NavigationStatic) == 0)
+                {
+                    flags |= StaticEditorFlags.NavigationStatic;
+                    GameObjectUtility.SetStaticEditorFlags(obj, flags);
+                    count++;
+                }
+            }
+        }
+        Debug.Log($"[PREPARA SCENA] Navigation Static attivato su {count} oggetti.");
+    }
+
+    void BakeNavMesh()
+    {
+        NavMeshBuilder.BuildNavMesh();
+        Debug.Log("[PREPARA SCENA] NavMesh calcolata.");
+    }
 }
 
 public static class EditorCoroutine
@@ -253,9 +381,13 @@ public static class EditorCoroutine
         runner.StartCoroutine(routine);
     }
 
-    private class EditorCoroutineRunner : MonoBehaviour
+private class EditorCoroutineRunner : MonoBehaviour
+{
+    void Awake()
     {
-        void Awake() { hideFlags = HideFlags.HideAndDontSave; }
+        hideFlags = HideFlags.HideAndDontSave;
+        Destroy(gameObject, 30f);
     }
+}
 }
 #endif

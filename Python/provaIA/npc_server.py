@@ -202,6 +202,16 @@ class AgentState(TypedDict):
     retry_count: int
 
 
+class OggettoSconosciuto(BaseModel):
+    name: str
+    tag: str
+
+
+class AnalyzeSceneRequest(BaseModel):
+    oggetti_sconosciuti: List[Dict[str, str]]
+    template_disponibili: List[Dict[str, Any]]
+
+
 def infer_effect(action_name: str, obj_name: str, tag: str, explicit_effect: str) -> str:
     if explicit_effect and explicit_effect != "none":
         return explicit_effect
@@ -370,7 +380,7 @@ def planner_node(state: AgentState) -> Dict[str, Any]:
         "1. GOAL: un obiettivo di alto livello in una frase (es. 'Mantenermi in salute', 'Esplorare la zona')\n"
         "2. SOTTO-OBIETTIVI: 1-3 passi per raggiungere il goal, ciascuno con priorita' (ALTA, MEDIA, BASSA)\n"
         "3. AZIONI CONCRETE: per ogni sotto-obiettivo, la sequenza di azioni\n\n"
-       "REGOLE:\n"
+        "REGOLE:\n"
         "- Usa SOLO oggetti nella sezione 'Oggetti con cui puoi INTERAGIRE'\n"
         "- Ogni interazione richiede: prima raggiungi l'oggetto, poi interagisci\n"
         "- Se fame >= 0.7, soddisfare la fame e' PRIORITA' ASSOLUTA\n"
@@ -517,10 +527,6 @@ In fondo a ExecutePlan() metti sempre: Destroy(this); yield break;{retry_warning
 def inspector_node(state: AgentState) -> Dict[str, Any]:
     logger.info("--- [LANGRAPH] 4. INSPECTOR ---")
 
-    if state["has_compile_error"]:
-        logger.warning(f"[INSPECTOR] Errore preesistente da Unity: {state['compile_error']}")
-        return {"has_compile_error": True}
-
     placeholder_issues = find_placeholder_issues(state["generated_code"])
     if placeholder_issues:
         logger.warning(f"[INSPECTOR] Placeholder trovati: {placeholder_issues}")
@@ -541,6 +547,13 @@ def inspector_node(state: AgentState) -> Dict[str, Any]:
     return {"has_compile_error": False, "compile_error": ""}
 
 
+def decide_start(state: AgentState) -> str:
+    if state["has_compile_error"] and state["compile_error"]:
+        logger.info("[ROUTER] Errore di compilazione rilevato, vado direttamente al Builder.")
+        return "builder"
+    return "retrieval"
+
+
 def decide_next_step(state: AgentState) -> str:
     if state["has_compile_error"] and state["retry_count"] < MAX_RETRIES:
         logger.info(f"[ROUTER] Retry Builder ({state['retry_count']}/{MAX_RETRIES})")
@@ -549,71 +562,7 @@ def decide_next_step(state: AgentState) -> str:
         logger.error("[ROUTER] Tentativi esauriti.")
     return END
 
-# ---------------------------------------------------------------------------
-# Modelli per analisi scena
-# ---------------------------------------------------------------------------
-class OggettoSconosciuto(BaseModel):
-    name: str
-    tag: str
 
-class AnalyzeSceneRequest(BaseModel):
-    oggetti_sconosciuti: List[Dict[str, str]]
-    template_disponibili: List[Dict[str, Any]]
-
-# ---------------------------------------------------------------------------
-# ENDPOINT per analizzare una scena nuova
-# ---------------------------------------------------------------------------
-@app.post("/npc/analyze-scene")
-async def analizza_scena(request: AnalyzeSceneRequest):
-    if not request.oggetti_sconosciuti:
-        return {"suggerimenti": []}
-
-    oggetti_text = "\n".join(
-        f"- Nome: '{o['name']}', Tag: '{o['tag']}'"
-        for o in request.oggetti_sconosciuti
-    )
-
-    template_text = "\n".join(
-        f"- {t['nome']}: azione='{t['azione']}', fame=[{t['fame_min']}..{t['fame_max']}], energy=[{t['energy_min']}..{t['energy_max']}]"
-        for t in request.template_disponibili
-    )
-
-    system_prompt = (
-        "Sei un analizzatore di scene 3D per Unity.\n"
-        "Per ogni oggetto, suggerisci il template InteractableObject piu' appropriato "
-        "e scegli un valore specifico per fame_effect e energy_effect DENTRO il range del template.\n\n"
-        "Considera il nome dell'oggetto e il suo tag.\n"
-        "Usa il buonsenso: una mela sazia meno di un piatto di pasta, "
-        "un divano e' piu' comodo di una sedia, un letto e' piu' riposante di una poltrona.\n\n"
-        "TEMPLATE DISPONIBILI (con range):\n"
-        f"{template_text}\n\n"
-        "Rispondi SOLO in formato JSON, con un array 'suggerimenti'. Ogni elemento deve avere:\n"
-        "- name: nome dell'oggetto\n"
-        "- template: nome del template scelto (o 'NonInteragibile')\n"
-        "- fame_effect: valore numerico dentro il range del template\n"
-        "- energy_effect: valore numerico dentro il range del template\n"
-        "- confidence: alta/media/bassa\n\n"
-        "Esempio:\n"
-        '{"suggerimenti": [{"name": "Mela", "template": "Cibo", "fame_effect": -0.3, "energy_effect": 0, "confidence": "alta"}]}'
-    )
-
-    prompt = (
-        f"Oggetti da analizzare:\n{oggetti_text}\n\n"
-        "Genera i suggerimenti in formato JSON."
-    )
-
-    try:
-        result = ollama.generate(system_prompt, prompt, temperature=0.0)
-        result = result.strip()
-        if "```json" in result:
-            result = result.split("```json")[1].split("```")[0]
-        elif "```" in result:
-            result = result.split("```")[1].split("```")[0]
-        suggerimenti = json.loads(result)
-        return suggerimenti
-    except Exception as e:
-        logger.error(f"[ANALYZE SCENE] Errore: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 # ==============================================================================
 # GRAFO LANGGRAPH
 # ==============================================================================
@@ -624,7 +573,7 @@ workflow.add_node("planner", planner_node)
 workflow.add_node("builder", builder_node)
 workflow.add_node("inspector", inspector_node)
 
-workflow.add_edge(START, "retrieval")
+workflow.add_conditional_edges(START, decide_start, {"retrieval": "retrieval", "builder": "builder"})
 workflow.add_edge("retrieval", "planner")
 workflow.add_edge("planner", "builder")
 workflow.add_edge("builder", "inspector")
@@ -687,6 +636,60 @@ def maybe_reflect():
 # ==============================================================================
 # ENDPOINT FASTAPI
 # ==============================================================================
+
+@app.post("/npc/analyze-scene")
+async def analizza_scena(request: AnalyzeSceneRequest):
+    logger.info(f"[ANALYZE SCENE] Ricevuti {len(request.oggetti_sconosciuti)} oggetti, {len(request.template_disponibili)} template")
+    if not request.oggetti_sconosciuti:
+        return {"suggerimenti": []}
+
+    oggetti_text = "\n".join(
+        f"- Nome: '{o['name']}', Tag: '{o['tag']}'"
+        for o in request.oggetti_sconosciuti
+    )
+
+    template_text = "\n".join(
+        f"- {t['nome']}: azione='{t['azione']}', fame=[{t['fame_min']}..{t['fame_max']}], energy=[{t['energy_min']}..{t['energy_max']}]"
+        for t in request.template_disponibili
+    )
+
+    system_prompt = (
+        "Sei un analizzatore di scene 3D per Unity.\n"
+        "Per ogni oggetto, suggerisci il template InteractableObject piu' appropriato "
+        "e scegli un valore specifico per fame_effect e energy_effect DENTRO il range del template.\n\n"
+        "Considera il nome dell'oggetto e il suo tag.\n"
+        "Usa il buonsenso: una mela sazia meno di un piatto di pasta, "
+        "un divano e' piu' comodo di una sedia, un letto e' piu' riposante di una poltrona.\n\n"
+        "TEMPLATE DISPONIBILI (con range):\n"
+        f"{template_text}\n\n"
+        "Rispondi SOLO in formato JSON, con un array 'suggerimenti'. Ogni elemento deve avere:\n"
+        "- name: nome dell'oggetto\n"
+        "- template: nome del template scelto (o 'NonInteragibile')\n"
+        "- fame_effect: valore numerico dentro il range del template\n"
+        "- energy_effect: valore numerico dentro il range del template\n"
+        "- confidence: alta/media/bassa\n\n"
+        "Esempio:\n"
+        '{"suggerimenti": [{"name": "Mela", "template": "Cibo", "fame_effect": -0.3, "energy_effect": 0, "confidence": "alta"}]}'
+    )
+
+    prompt = (
+        f"Oggetti da analizzare:\n{oggetti_text}\n\n"
+        "Genera i suggerimenti in formato JSON."
+    )
+
+    try:
+        result = ollama.generate(system_prompt, prompt, temperature=0.0)
+        result = result.strip()
+        if "```json" in result:
+            result = result.split("```json")[1].split("```")[0]
+        elif "```" in result:
+            result = result.split("```")[1].split("```")[0]
+        suggerimenti = json.loads(result)
+        return suggerimenti
+    except Exception as e:
+        logger.error(f"[ANALYZE SCENE] Errore: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/npc/decide")
 async def ricevi_scena_e_decidi(report: ReportScena):

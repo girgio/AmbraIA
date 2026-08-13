@@ -15,6 +15,9 @@ TagManager:
   - Cestino
   - Dummy
   - Intrattenimento
+  - Bicchiere
+  - Divano
+  - Computer
   layers:
   - Default
   - TransparentFX
