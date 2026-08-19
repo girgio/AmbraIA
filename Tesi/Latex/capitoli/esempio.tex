@@ -1,181 +1,56 @@
-\chapter{Esempio Capitolo} %\label{1cap:spinta_laterale}
-% [titolo ridotto se non ci dovesse stare] {titolo completo}
-%
+\chapter{Dagli NPC tradizionali agli LLM: background e stato dell'arte}
 
-%\begin{citazione}
-%BREVE SPIEGAZIONE CONTENUTO CAPITOLO
-%\end{citazione}
+\section{NPC tradizionali: analisi e limiti}
 
-\section{Prima sezione}
-
-\subsection{Prima sottosezione}
-
-\paragraph{Primo paragrafo} Questa è una prova di un testo di un paragrafo.
-
-The well known Pythagorean theorem $x^2 + y^2 = z^2$\footnote{\url{http://google.com}} was 
-proved to be invalid \textbf{\textit{for other exponents}}. 
-
-\textsc{com.java.xxx}
-
-``Lorem ipsum''
-
-Meaning the next equation has no integer solutions:
-
-\[ x^n_m + y^n = z^n \]
+L'IA nei videogiochi è nata praticamente in simbiosi con i videogiochi stessi. Basti pensare a \textit{Pong}\cite{pong}, in cui l'avversario deve cercare di colpire la pallina evitando di subire punto. Un altro esempio importante è \textit{Pac-Man}\cite{pacman} del 1980, dove i quattro fantasmi hanno ciascuno un algoritmo differente per raggiungere il protagonista: Blinky, il fantasma rosso, imposta il suo obiettivo di movimento in base alla posizione attuale di Pac-Man, mentre Inky, il fantasma blu, si basa sulla posizione del fantasma rosso e di Pac-Man per accerchiarlo.
+Inizialmente gli NPC servivano principalmente per dare una sfida al giocatore. Oggi troviamo sistemi più complessi, alcuni dei quali simulano anche il comportamento umano, come \textit{The Sims}\cite{thesims}, che simula la vita quotidiana delle persone. Come osserva Millington: ``Now we have a massive diversity of AI in games. Many genres are still using the simple AI of 1979 because that's all they need'' \cite{millington2019artificial}. Nonostante l'IA nei videogiochi, e più in generale nel mondo dell'informatica, si sia evoluta molto, molti videogiochi moderni utilizzano ancora strutture vecchie di decenni. Il motivo risiede nella diversità dei generi videoludici e nello scopo che ogni videogioco si prefigge, come già introdotto nel Capitolo 1.
+Normalmente un'IA per un NPC viene strutturata in tre moduli principali: movimento, decision making e strategia, come mostrato in Figura \ref{fig:moduli_ia}. Questa è una struttura proposta da Ian Millington per spiegare meglio il concetto di IA nei videogiochi \cite{millington2019artificial}. I primi due moduli agiscono sul singolo agente, mentre la strategia agisce anche sulle azioni degli altri agenti.
 
 \begin{figure}[h]
-\includegraphics[width=3cm]{figure/picture.pdf}
-\centering
-\caption{Girasole piantato nel cortile del Dipartimento di Informatica.}
+	\centering
+	\includegraphics[width=1\textwidth]{figure/moduli_ia.pdf}
+	\caption{Struttura a moduli dell'IA nei videogiochi. Figura adattata da \cite{millington2019artificial}.}
+	\label{fig:moduli_ia}
 \end{figure}
 
+Il Movimento è definito come il modulo che calcola un certo tipo di percorso e coordina il movimento dell'NPC. Il Decision Making permette all'NPC di decidere quali azioni compiere tra quelle disponibili. La Strategia serve a coordinare i due moduli sopracitati per farli lavorare insieme ad altri agenti.
+Non tutti i moduli sono necessari: \textit{Super Mario Galaxy}\cite{mariogalaxy} ha bisogno solo del modulo di movimento, dato che i nemici devono semplicemente inseguire il giocatore. Altri giochi d'azione più complicati come \textit{Dark Souls}\cite{darksouls} richiedono decisioni più complesse — attaccare, parare, muoversi o curarsi — ma non tengono conto delle azioni degli altri nemici, rendendo superflua la Strategia. Tutto ciò rientra nelle scelte di design: ogni videogioco vuole trasmettere emozioni diverse e offrire un diverso grado di sfida.
+AmbraIA opera soprattutto sul campo del Decision Making, cercando di non coprire un genere preciso ma di creare un'IA che possa rendere gli NPC credibili in scene 3D differenti. Il Decision Making viene affrontato principalmente tramite due strutture: gli alberi decisionali e le macchine a stati finiti.
 
+\subsection{Alberi decisionali}
 
+Non entrando troppo nei particolari, gli alberi decisionali sono strutture dati che vengono percorse ogni volta che deve essere presa una decisione. Sono formati da un insieme di nodi e da archi, cioè collegamenti direzionati tra due nodi che rappresentano le decisioni. Gli alberi sono caratterizzati dall'assenza di cicli. Le decisioni finali sono rappresentate dai nodi foglia, cioè nodi senza archi uscenti.
+Non appena c'è bisogno di prendere una decisione, l'albero viene percorso a partire dal suo nodo iniziale, detto radice. Viene percorso un arco piuttosto che un altro a seconda degli input che l'agente riceve, come la percezione del mondo esterno o il suo stato interno, ad esempio fame o stanchezza. Una volta arrivati al nodo foglia, la decisione è stata presa e si esegue l'azione designata, come mostrato in Figura \ref{fig:alberodecisionale}.
 
+% TODO: \usepackage{graphicx} required
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.1\textwidth]{figure/albero_decisionale}
+	\caption{Esempio di albero decisionale per un NPC.}
+	\label{fig:alberodecisionale}
+\end{figure}
 
+\subsection{Macchine a stati finiti}
 
-\begin{table}
-    \centering
-    \caption{Questions to decide whether to conduct a MLR~\cite{garousi2019_mlr_guidelines}.}
-    \vspace{1mm} % Adjust the height of the space between caption and tabular
-    
-    \rowcolors{1}{graytable}{white}
-    \resizebox{\linewidth}{!}{
-    \begin{tabular}{p{0.025\linewidth} p{0.875\linewidth} P{0.1\linewidth}}
-        \toprule
-        \rowcolor{black}
-        \textbf{\textcolor{white}{\#}} & \textbf{\textcolor{white}{Question}} & \textbf{\textcolor{white}{Answer}}\\
-        \bottomrule
-        1 & Is the subject ``complex'' and not solvable by considering only the formal literature? & Yes\\
-        2 & Is there a lack of volume or quality of evidence, or a lack of consensus of outcome measurement in the formal literature? & No\\
-        3 & Is the contextual information important to the subject under study? & Yes\\
-        4 & Is it the goal to validate or corroborate scientific outcomes with practical experiences? & Yes\\
-        5 & Is it the goal to challenge assumptions or falsify results from practice using academic research or vice versa? & Yes\\
-        6 & Would a synthesis of insights and evidence from the industrial and academic community be useful to one or even both communities? & Yes\\
-        7 & Is there a large volume of practitioner sources indicating high practitioner interest in a topic? & Yes\\
-        \bottomrule
-        \rowcolor{white}
-        \multicolumn{3}{p{\linewidth}}{\textit{\textbf{Note}: The possible answers to each question are ``Yes'' or ``No''. One or more ``Yes'' responses suggest that it could be useful to conduct a MLR.}}\\
-    \end{tabular}
-    }
-    
-    \label{table:motivations_MLR}
-\end{table}
+Le macchine a stati finiti sono formalmente definite come una quintupla composta da:
 
-
-
-
-
-
-
-
-
-\begin{center}
-\begin{table}[!h]
-\begin{tabular}{||c c c ||}
- \hline
- Col1 & Col2 & Col3 \\ [0.5ex] 
- \hline\hline
- 1 & 6 & 787 \\ 
- \hline
- 2 & 7 & 5415 \\
- \hline
- 3 & 545 & 7507 \\
- \hline
- 4 & 545 & 7560 \\
- \hline
- 5 & 88 & 6344 \\ [1ex] 
- \hline
-\end{tabular}
-\caption{Esempio di tabella}
-\end{table}
-\end{center}
-
-The well known Pythagorean theorem $x^2 + y^2 = z^2$ was 
-proved to be invalid for other exponents. 
-Meaning the next equation has no integer solutions:
-
-\[ x^n_m + y^n = z^n \]
-
-\begin{minted}
-[
-frame=lines,
-framesep=2mm,
-baselinestretch=1.2,
-bgcolor=LightGray,
-fontsize=\footnotesize,
-linenos
-]
-{python}
-import numpy as np
-    
-def incmatrix(genl1,genl2):
-    m = len(genl1)
-    n = len(genl2)
-    M = None #to become the incidence matrix
-    VT = np.zeros((n*m,1), int)  #dummy variable
-    
-    #compute the bitwise xor matrix
-    M1 = bitxormatrix(genl1)
-    M2 = np.triu(bitxormatrix(genl2),1) 
-
-    for i in range(m-1):
-        for j in range(i+1, m):
-            [r,c] = np.where(M2 == M1[i,j])
-            for k in range(len(r)):
-                VT[(i)*n + r[k]] = 1;
-                VT[(i)*n + c[k]] = 1;
-                VT[(j)*n + r[k]] = 1;
-                VT[(j)*n + c[k]] = 1;
-                
-                if M is None:
-                    M = np.copy(VT)
-                else:
-                    M = np.concatenate((M, VT), 1)
-                
-                VT = np.zeros((n*m,1), int)
-    
-    return M
-\end{minted}
-
-Questo è un elenco puntato
 \begin{itemize}
-    \item primo elemento
-    \begin{itemize}
-    \item primo sottoelemento
-    \end{itemize}
-    \item secondo elemento
-    \item terzo elemento
+	\item Un insieme di stati $Q$
+	\item Un alfabeto $\Sigma$
+	\item Uno stato iniziale $q_0$
+	\item Un insieme di stati finali $Q_f$
+	\item Una funzione di transizione $\delta: Q \times \Sigma \rightarrow Q$
 \end{itemize}
 
-Questo è un elenco numerato
-\begin{enumerate}
-    \item primo elemento
-    \begin{enumerate}
-    \item primo sottoelemento
-    \end{enumerate}
-    \item secondo elemento
-    \item terzo elemento
-\end{enumerate}
+Nel contesto videoludico gli stati rappresentano una situazione in cui si trova l'NPC (in guardia, affamato, impaurito) che lo porta ad agire in un certo modo. Lo stato iniziale è la situazione di partenza dell'NPC. L'alfabeto rappresenta una serie di input. La funzione di transizione controlla se una condizione si verifica in un certo stato e, se ciò avviene, cambia lo stato dell'NPC. Gli stati finali rappresentano situazioni in cui l'NPC ha raggiunto un obiettivo o ha completato un comportamento. Le decisioni vengono quindi prese in base allo stato in cui si trova l'NPC in un determinato momento, come mostrato in Figura \ref{fig:fsm}.
 
-Questa è una frase che dice qualcosa, e deve essere supportata da una citazione.
-Se gli autori sono più di due, scriviamo che Garousi et al. hanno detto qualcosa~\cite{garousi2019_mlr_guidelines}.
-Se gli autori sono due, scriviamo che Bruegge e Dutoit hanno detto cose~\cite{bruegge2009object_se}.
-Quest'altra frase dice qualcos'altro, ma non so in quale paper l'ho letta~\needcite.
-Questa frase dice cose supportate da diverse pubblicazioni~\cite{casillo2022detecting,destefano2020splicing,giordano2022slr,iannone2022secret,lambiase2022fences,sellitto2022refactoring,pontillo2022static}.
-In questa parte devo ricordarmi qualcosa\nb{devo ricordarmi di questa cosa}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.91\textwidth]{figure/fsm.pdf}
+	\caption{Esempio di macchina a stati finiti per un NPC.}
+	\label{fig:fsm}
+\end{figure}
 
-\revised{Questa parte del documento è stata modificata dopo che il relatore mi ha dato suggerimenti.}
+\subsection{Limiti degli approcci tradizionali}
 
-Invece qui ho avuto dei feedback dal relatore, e devo ricordarmi di applicare i commenti. \feedback{aggiungi un paragrafo sulle research question}
-
-\goal{Questo è l'obiettivo della tesi.}
-
-\rqbox{1}{Quale è la nostra prima Research Question?}
-
-\rqanswer{1}{Questa è la risposta alla prima RQ.}
-
-\finding{1}{Questo è il primo finding che riportiamo tra i risultati.}
-
-\takeaway{1}{Primo takeaway message.}
-
+Questi approcci hanno molti vantaggi: sono strutturalmente semplici, possono essere trattati con valori primitivi e si possono combinare tra loro. Il limite più grande è la staticità di queste strutture: sono estremamente specifiche per il sistema in cui vengono implementate e non tengono conto delle azioni passate. Inoltre, ogni nuovo comportamento richiede la modifica manuale di stati, transizioni o rami dell'albero, rendendo difficile l'adattamento a contesti non previsti in fase di progettazione..

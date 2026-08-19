@@ -1,5 +1,11 @@
-\backcite {garousi2019_mlr_guidelines}{{iii}{(document)}{Doc-Start}}
-\backcite {garousi2019_mlr_guidelines}{{4}{2.1}{table.caption.4}}
-\backcite {garousi2019_mlr_guidelines}{{6}{2.1.1}{Item.4}}
-\backcite {bruegge2009object_se}{{6}{2.1.1}{Item.4}}
-\backcite {casillo2022detecting,destefano2020splicing,giordano2022slr,iannone2022secret,lambiase2022fences,sellitto2022refactoring,pontillo2022static}{{6}{2.1.1}{Item.4}}
+\backcite {millington2019artificial}{{ii}{(document)}{Doc-Start}}
+\backcite {thesims}{{1}{1.1}{section.1.1}}
+\backcite {tomodachilife}{{1}{1.1}{section.1.1}}
+\backcite {pong}{{3}{2.1}{section.2.1}}
+\backcite {pacman}{{3}{2.1}{section.2.1}}
+\backcite {thesims}{{3}{2.1}{section.2.1}}
+\backcite {millington2019artificial}{{3}{2.1}{section.2.1}}
+\backcite {millington2019artificial}{{4}{2.1}{section.2.1}}
+\backcite {millington2019artificial}{{4}{2.1}{figure.caption.2}}
+\backcite {mariogalaxy}{{4}{2.1}{figure.caption.2}}
+\backcite {darksouls}{{4}{2.1}{figure.caption.2}}

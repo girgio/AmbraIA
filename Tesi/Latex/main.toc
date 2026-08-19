@@ -5,9 +5,10 @@
 \contentsline {chapter}{\numberline {1}Introduzione}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Non-Playable Character: contesto e ruolo}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Obiettivi}{2}{section.1.2}%
-\contentsline {chapter}{\numberline {2}Esempio Capitolo}{3}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Prima sezione}{3}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Prima sottosezione}{3}{subsection.2.1.1}%
-\contentsline {paragraph}{Primo paragrafo}{3}{section*.2}%
+\contentsline {chapter}{\numberline {2}Dagli NPC tradizionali agli LLM: background e stato dell'arte}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}NPC tradizionali: analisi e limiti}{3}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Alberi decisionali}{5}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Macchine a stati finiti}{6}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Limiti degli approcci tradizionali}{7}{subsection.2.1.3}%
 \contentsline {chapter}{\numberline {3}Conclusioni}{8}{chapter.3}%
 \contentsline {chapter}{Bibliografia}{9}{chapter.3}%
