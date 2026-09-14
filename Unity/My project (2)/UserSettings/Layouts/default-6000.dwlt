@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1920
     height: 1037
   m_ShowMode: 4
-  m_Title: Scene
+  m_Title: Project
   m_RootView: {fileID: 6}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: ConsoleWindow
+  m_Name: ProjectBrowser
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
@@ -121,14 +121,14 @@ MonoBehaviour:
     y: 581
     width: 1467
     height: 400
-  m_MinSize: {x: 101, y: 126}
-  m_MaxSize: {x: 4001, y: 4026}
-  m_ActualView: {fileID: 18}
+  m_MinSize: {x: 231, y: 276}
+  m_MaxSize: {x: 10001, y: 10026}
+  m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
   - {fileID: 18}
-  m_Selected: 1
-  m_LastSelected: 0
+  m_Selected: 0
+  m_LastSelected: 1
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -301,7 +301,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 0
+    y: 43
     width: 1920
     height: 36
   m_SerializedDataModeController:
@@ -594,7 +594,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Template
+    - Assets/Scripts/version 2.0
     m_Globs: []
     m_ProductIds: 
     m_AnyWithAssetOrigin: 0
@@ -604,7 +604,7 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Template
+  - Assets/Scripts/version 2.0
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\Giovanni\AmbraIA\Unity\My project (2)
   m_LockTracker:
@@ -613,14 +613,15 @@ MonoBehaviour:
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs:
-    - m_Data: 38910
+    - m_Data: 38928
     m_LastClickedID:
-      m_Data: 38910
+      m_Data: 38928
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 38636
-    - m_Data: 38638
-    - m_Data: 38640
+    - m_Data: 38600
+    - m_Data: 38602
+    - m_Data: 38604
+    - m_Data: 1000000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -653,9 +654,9 @@ MonoBehaviour:
       m_Data: 0
     m_ExpandedIDs:
     - m_Data: 0
-    - m_Data: 38636
-    - m_Data: 38638
-    - m_Data: 38640
+    - m_Data: 38600
+    - m_Data: 38602
+    - m_Data: 38604
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -682,10 +683,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs:
-    - m_Data: 29112
-    m_LastClickedInstanceID: 29112
-    m_HadKeyboardFocusLastEvent: 1
+    m_SelectedInstanceIDs: []
+    m_LastClickedInstanceID: 0
+    m_HadKeyboardFocusLastEvent: 0
     m_ExpandedInstanceIDs: []
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -737,8 +737,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1468
-    y: 24
+    x: 1467
+    y: 79
     width: 452
     height: 955
   m_SerializedDataModeController:
@@ -789,7 +789,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 24
+    y: 79
     width: 361
     height: 555
   m_SerializedDataModeController:
@@ -812,24 +812,7 @@ MonoBehaviour:
       m_LastClickedID:
         m_Data: 0
       m_ExpandedIDs:
-      - m_Data: -21880
-      - m_Data: -19532
-      - m_Data: -16804
-      - m_Data: -16698
-      - m_Data: -13936
-      - m_Data: -13920
-      - m_Data: -8656
-      - m_Data: -8652
-      - m_Data: -1574
-      - m_Data: 23952
-      - m_Data: 24322
-      - m_Data: 25192
-      - m_Data: 25784
-      - m_Data: 26336
-      - m_Data: 26906
-      - m_Data: 28260
-      - m_Data: 29976
-      - m_Data: 30212
+      - m_Data: -1272
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -876,8 +859,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Scene\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 363
-    y: 24
+    x: 362
+    y: 79
     width: 1103
     height: 555
   m_SerializedDataModeController:
@@ -1464,7 +1447,7 @@ MonoBehaviour:
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 3.0525408, y: 5.4138007, z: -1.58798}
+    m_Target: {x: -0.117594525, y: 2.2710044, z: -0.6440493}
     speed: 2
     m_Value: {x: 3.0525408, y: 5.4138007, z: -1.58798}
   m_RenderMode: 0
@@ -1512,11 +1495,11 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0.015610802, y: 0.9779987, z: -0.07970867, w: 0.19226682}
+    m_Target: {x: -0.34972173, y: 0.2765924, z: -0.10887021, w: -0.8884555}
     speed: 2
     m_Value: {x: 0.015610802, y: 0.9779987, z: -0.07970867, w: 0.1922668}
   m_Size:
-    m_Target: 0.15872982
+    m_Target: 4.021077
     speed: 2
     m_Value: 0.15872982
   m_Ortho:
@@ -1677,7 +1660,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 605
+    y: 660
     width: 1466
     height: 374
   m_SerializedDataModeController:

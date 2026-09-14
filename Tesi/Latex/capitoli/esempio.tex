@@ -3,7 +3,7 @@
 \section{NPC tradizionali: analisi e limiti}
 
 L'IA nei videogiochi è nata praticamente in simbiosi con i videogiochi stessi. Basti pensare a \textit{Pong}\cite{pong}, in cui l'avversario deve cercare di colpire la pallina evitando di subire punto. Un altro esempio importante è \textit{Pac-Man}\cite{pacman} del 1980, dove i quattro fantasmi hanno ciascuno un algoritmo differente per raggiungere il protagonista: Blinky, il fantasma rosso, imposta il suo obiettivo di movimento in base alla posizione attuale di Pac-Man, mentre Inky, il fantasma blu, si basa sulla posizione del fantasma rosso e di Pac-Man per accerchiarlo.
-Inizialmente gli NPC servivano principalmente per dare una sfida al giocatore. Oggi troviamo sistemi più complessi, alcuni dei quali simulano anche il comportamento umano, come \textit{The Sims}\cite{thesims}, che simula la vita quotidiana delle persone. Come osserva Millington: ``Now we have a massive diversity of AI in games. Many genres are still using the simple AI of 1979 because that's all they need'' \cite{millington2019artificial}. Nonostante l'IA nei videogiochi, e più in generale nel mondo dell'informatica, si sia evoluta molto, molti videogiochi moderni utilizzano ancora strutture vecchie di decenni. Il motivo risiede nella diversità dei generi videoludici e nello scopo che ogni videogioco si prefigge, come già introdotto nel Capitolo 1.
+Inizialmente gli NPC servivano principalmente per dare una sfida al giocatore. Oggi troviamo sistemi più complessi, alcuni dei quali simulano anche il comportamento umano, come \textit{The Sims}\cite{thesims}, che simula la vita quotidiana delle persone. Come osserva Millington: ``Now we have a massive diversity of AI in games. Many genres are still using the simple AI of 1979 because that's all they need'' \cite{millington2019artificial}. Nonostante l'IA nei videogiochi, e più in generale nel mondo dell'informatica, si sia evoluta molto, vari videogiochi moderni utilizzano ancora strutture vecchie di decenni. Il motivo risiede nella diversità dei generi videoludici e nello scopo che ogni videogioco si prefigge, come già introdotto nel Capitolo 1.
 Normalmente un'IA per un NPC viene strutturata in tre moduli principali: movimento, decision making e strategia, come mostrato in Figura \ref{fig:moduli_ia}. Questa è una struttura proposta da Ian Millington per spiegare meglio il concetto di IA nei videogiochi \cite{millington2019artificial}. I primi due moduli agiscono sul singolo agente, mentre la strategia agisce anche sulle azioni degli altri agenti.
 
 \begin{figure}[h]
@@ -53,4 +53,128 @@ Nel contesto videoludico gli stati rappresentano una situazione in cui si trova 
 
 \subsection{Limiti degli approcci tradizionali}
 
-Questi approcci hanno molti vantaggi: sono strutturalmente semplici, possono essere trattati con valori primitivi e si possono combinare tra loro. Il limite più grande è la staticità di queste strutture: sono estremamente specifiche per il sistema in cui vengono implementate e non tengono conto delle azioni passate. Inoltre, ogni nuovo comportamento richiede la modifica manuale di stati, transizioni o rami dell'albero, rendendo difficile l'adattamento a contesti non previsti in fase di progettazione..
+Questi approcci hanno molti vantaggi: sono strutturalmente semplici, possono essere trattati con valori primitivi e si possono combinare tra loro. Il limite più grande è la staticità di queste strutture: sono estremamente specifiche per il sistema in cui vengono implementate e non tengono conto delle azioni passate. Inoltre, ogni nuovo comportamento richiede la modifica manuale di stati, transizioni o rami dell'albero, rendendo difficile l'adattamento a contesti non previsti in fase di progettazione.
+
+\section{Gli LLM nei videogiochi: opportunità e sfide}
+
+L'intelligenza artificiale generativa e i Large Language Model rappresentano uno dei più grandi risultati dell'informatica moderna. Ormai gli LLM si sono introdotti nella maggior parte degli ambiti, lavorativi e non. Gli LLM sono modelli linguistici addestrati su enormi quantità di dati, che generano principalmente testo, ma si sta puntando sempre di più verso modelli General Purpose, in grado di generare anche immagini, audio, video e altro ancora.
+
+\subsection{LLM come strumenti per lo sviluppo di videogiochi}
+
+Anche nel mondo dei videogiochi gli LLM sono sbarcati, aiutando gli sviluppatori a creare strumenti che facilitano lo sviluppo. Un esempio è il progetto ``LLMR: Real-time Prompting of Interactive Worlds using Large Language Models'' di De La Torre et al. \cite{delatorre2024llmr}. LLMR è un framework per la creazione di asset e scene 3D che utilizza un modello linguistico per la generazione di questi asset. Nell'architettura descritta nel paper è importante l'approccio human in the loop: l'utente inizia una conversazione con il modello per fornire tutte le informazioni necessarie alla generazione degli asset. A questo punto l'LLM genera i file C\# che descrivono i vari elementi della scena. Una volta generati gli asset, l'utente può chiedere al modello modifiche automatiche oppure agire manualmente su di essi, prima di generare la scena completa.
+
+\subsection{LLM per il controllo degli NPC}
+
+Gli LLM inoltre assistono anche nella creazione di NPC. I comportamenti umani sono molto complessi, frutto di processi cognitivi articolati che comprendono l'analisi di ricordi ed esperienze passate, la percezione del mondo e lo stato fisiologico ed emotivo. I videogiochi che vogliono simulare i comportamenti umani, anche solo in parte, utilizzano per la maggior parte macchine a stati finiti enormi e molto specifiche per il gioco sviluppato; un esempio già citato è \textit{Tomodachi Life} \cite{tomodachilife}. Gli LLM possono essere utilizzati per semplificare queste architetture.
+
+Nel paper scientifico ``LLM-Driven NPCs: Cross-Platform Dialogue System for Games and Social Platforms'' di Song \cite{song2025llmnpc} viene proposto un prototipo di NPC che dialoga tramite LLM con il giocatore sia in-game tramite Unity, sia fuori dal gioco su Discord. Parlare nel gioco aumenta un parametro che indica il gradimento dell'NPC, cioè il grado di familiarità tra il giocatore e l'NPC. Più il gradimento è alto, più l'NPC sarà confidente verso il giocatore. In questo caso l'LLM ha il solo compito di generare output testuali in base agli input testuali del giocatore.
+
+I Large Language Model però sono stati usati anche per elaborare decisioni più complesse, come in ``Generative Agents: Interactive Simulacra of Human Behavior'' di Park et al. \cite{park2023generative}, in cui viene progettata e implementata un'architettura che simula una cittadina di persone, le quali interagiscono tra loro, hanno la loro routine e la loro personalità. L'architettura cerca di simulare alcuni processi cognitivi della mente umana, come il deposito di ricordi in un database, l'estrazione di ricordi in base alla loro importanza e recenza, o la riflessione periodica sulle proprie azioni. Questo è un esempio di IA di strategia e decision making, poiché gli abitanti della cittadina interagiscono tra loro e prendono decisioni in base al mondo circostante e allo stato dell'NPC.
+
+\subsection{Sfide e limiti degli LLM}
+
+Nonostante le opportunità offerte, gli LLM presentano anche diverse criticità. Possono essere soggetti ad allucinazioni, generando informazioni non veritiere o incoerenti con il contesto; i tempi di esecuzione possono essere elevati, soprattutto quando il modello viene eseguito localmente; inoltre, in assenza di un'architettura adeguata, tendono a ripetere le stesse risposte o gli stessi comportamenti. Queste sfide rendono necessario progettare sistemi che affianchino all'LLM componenti deterministiche in grado di gestire memoria, coerenza e affidabilità.
+
+AmbraIA prende ispirazione dalle architetture sopraccitate e cerca di creare un NPC che possa interagire in un ambiente 3D di Unity, prendendo decisioni coerenti con il suo stato fisiologico e la sua percezione dell'ambiente. AmbraIA non è una struttura pensata per un videogioco o un ambiente specifico, grazie a un sistema semi-automatico di matching tra GameObject e interazioni/animazioni definite dallo sviluppatore. L'LLM viene utilizzato da AmbraIA per pianificare le azioni, mappare le azioni in C\# e generare riflessioni periodiche. Tutti questi aspetti vengono approfonditi nel Capitolo 3.
+
+\chapter{L'architettura di AmbraIA}
+
+AmbraIA è un'architettura cognitiva per agenti autonomi in ambienti 3D, supportata da modelli linguistici generativi. Questa architettura è divisa in vari moduli, ognuno con il compito di preparare i dati per il modulo successivo; il risultato finale viene inviato a Unity, dove prende la forma di uno script C\# che permette all'agente di muoversi e interagire con la scena. Prima di descrivere in dettaglio ogni modulo, partiamo dalla definizione del problema dell'NPC che interagisce con l'ambiente e dalla descrizione dell'ambiente stesso.
+
+\section{Specifica PEAS}
+
+Per descrivere formalmente l'agente e il suo ambiente, si utilizza il modello PEAS (Performance, Environment, Actuators, Sensors), uno standard nella progettazione di agenti intelligenti.
+
+\begin{description}
+	\item[Performance] Le misure di prestazione adottate per valutare l'operato dell'agente sono:
+	\begin{itemize}
+		\item Coerenza delle azioni con lo stato fisiologico
+		\item Varietà dei comportamenti nel tempo
+		\item Tasso di successo della compilazione del codice C\# generato
+		\item Tempo di risposta del server, cioè la latenza tra richiesta e piano generato
+	\end{itemize}
+	
+	\item[Environment] Gli elementi che formano l'ambiente sono:
+	\begin{itemize}
+		\item Una scena 3D Unity con oggetti interagibili (cibo, mobili, oggetti decorativi)
+		\item Proprietà specifiche per ogni oggetto (nome, tag, azione disponibile, effetti fisiologici)
+		\item Lo stato fisiologico dell'NPC (fame e stanchezza), che evolve dinamicamente nel tempo
+	\end{itemize}
+	
+	\item[Actuators] Gli attuatori disponibili dall'agente sono:
+	\begin{itemize}
+		\item Movimento verso un oggetto (\texttt{MoveToTargetAndWait})
+		\item Interazione con un oggetto (\texttt{InteractWithAndWait})
+		\item Modifica dello stato fisiologico come conseguenza delle interazioni
+	\end{itemize}
+	
+	\item[Sensors] I sensori attraverso i quali l'agente riceve input percettivi sono:
+	\begin{itemize}
+		\item Lista degli oggetti nel raggio di percezione (nome, distanza, azione, effetto)
+		\item Stato fisiologico corrente (fame, stanchezza)
+		\item Cronologia delle azioni più importanti e recenti
+		\item Memoria a lungo termine
+	\end{itemize}
+\end{description}
+
+\section{Caratteristiche dell'ambiente}
+
+L'ambiente in cui opera AmbraIA presenta le seguenti caratteristiche:
+
+\begin{description}
+	\item[Singolo agente] Il problema è modellato come un problema a singolo agente. Non sono presenti altri NPC o agenti concorrenti durante l'esecuzione, sebbene l'architettura sia predisposta per future estensioni multi-agente.
+	
+	\item[Parzialmente osservabile] L'agente percepisce solo gli oggetti entro un raggio di percezione configurabile, non l'intera scena. Inoltre non ha accesso diretto allo stato interno degli oggetti (ad esempio, non sa se un cibo è già stato consumato).
+	
+	\item[Semi-deterministico] Le interazioni con gli oggetti hanno effetti deterministici: mangiare una mela riduce sempre la fame di un valore fisso. Tuttavia, il processo decisionale basato su LLM introduce non-determinismo nella scelta delle azioni.
+	
+	\item[Sequenziale] Il processo decisionale non è suddiviso in episodi indipendenti, ma consiste in una sequenza continua di pianificazione, esecuzione e aggiornamento della memoria. Le decisioni hanno conseguenze a lungo termine perché influenzano i ricordi che guideranno le scelte future.
+	
+	\item[Statico] L'ambiente è statico durante l'esecuzione di un piano: gli oggetti non cambiano posizione o proprietà mentre l'NPC esegue le azioni. Lo stato fisiologico dell'NPC, invece, si modifica continuamente nel tempo.
+	
+	\item[Discreto] Lo spazio degli stati è discreto. Le azioni disponibili sono in numero finito e lo stato fisiologico è rappresentato da valori normalizzati tra 0 e 1.
+\end{description}
+
+\section{Analisi del problema}
+
+Il problema può essere formalizzato come un problema di pianificazione continua in un ambiente parzialmente osservabile, dove ogni stato è definito dalla combinazione di posizione dell'NPC, stato fisiologico, oggetti percepiti e contenuto del Memory Stream, cioè della memoria persistente.
+
+\begin{description}
+	\item[Stati] Configurazione corrente dell'NPC: posizione, fame, stanchezza e ricordi accumulati.
+	\item[Stato iniziale] NPC posizionato nella scena con fame e stanchezza iniziali e Memory Stream vuoto.
+	\item[Azioni] Movimento verso un oggetto oppure interazione con un oggetto.
+	\item[Spazio degli stati] Tutte le possibili combinazioni di posizioni, livelli fisiologici, oggetti percepiti e ricordi accumulati.
+	\item[Test obiettivo] Non esiste uno stato obiettivo finale. L'NPC deve mantenere un comportamento coerente e adattivo indefinitamente.
+\end{description}
+
+Il problema presenta le seguenti caratteristiche:
+
+\begin{itemize}
+	\item Spazio degli stati potenzialmente illimitato, a causa della crescita continua del Memory Stream.
+	\item Assenza di una soluzione ottima calcolabile: non esiste un comportamento ``perfetto''.
+	\item Necessità di bilanciare bisogni multipli simultaneamente (fame e stanchezza).
+	\item Necessità di mantenere coerenza temporale, senza contraddire i ricordi e le riflessioni.
+\end{itemize}
+
+Per questi motivi, il problema non può essere risolto tramite alberi decisionali predefiniti o macchine a stati finite tradizionali, ma risulta adatto all'uso di LLM combinati con un'architettura di memoria, retrieval e riflessione.
+
+\section{Il lato Unity di AmbraIA}
+
+AmbraIA è suddivisa principalmente in due macro moduli: il lato Unity e il lato server. Il lato Unity ha il compito di raccogliere i dati di input dall'ambiente e di gestire i dati di output, cioè le azioni che l'NPC deve eseguire. È composto da quattro sotto-moduli principali, implementati come script C\#:
+
+\begin{itemize}
+	\item \texttt{NPCController}: permette all'NPC di muoversi e interagire con gli oggetti della scena.
+	\item \texttt{SceneAnalyzer}: analizza la scena e invia i dati al server.
+	\item \texttt{InteractableObject}: permette ai GameObject di diventare interagibili.
+	\item \texttt{RuntimeCompiler}: compila a runtime il codice C\# generato dal server e lo attacca all'NPC.
+\end{itemize}
+
+La Figura \ref{fig:lato_unity} mostra una panoramica del lato Unity.
+
+\begin{figure}[h]
+	\centering
+	\hspace*{-5cm}
+	\includegraphics[width=1.5\textwidth]{lato_unity.pdf}
+	\caption{Panoramica del lato Unity di AmbraIA.}
+	\label{fig:lato_unity}
+\end{figure}

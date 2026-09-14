@@ -1,7 +1,7 @@
 \babel@toc {italian}{}\relax 
 \babel@toc {italian}{}\relax 
-\contentsline {chapter}{Elenco delle Figure}{ii}{section*.1}%
-\contentsline {chapter}{Elenco delle Tabelle}{iii}{section*.1}%
+\contentsline {chapter}{Elenco delle Figure}{iii}{section*.1}%
+\contentsline {chapter}{Elenco delle Tabelle}{iv}{section*.1}%
 \contentsline {chapter}{\numberline {1}Introduzione}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Non-Playable Character: contesto e ruolo}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Obiettivi}{2}{section.1.2}%
@@ -10,5 +10,14 @@
 \contentsline {subsection}{\numberline {2.1.1}Alberi decisionali}{5}{subsection.2.1.1}%
 \contentsline {subsection}{\numberline {2.1.2}Macchine a stati finiti}{6}{subsection.2.1.2}%
 \contentsline {subsection}{\numberline {2.1.3}Limiti degli approcci tradizionali}{7}{subsection.2.1.3}%
-\contentsline {chapter}{\numberline {3}Conclusioni}{8}{chapter.3}%
-\contentsline {chapter}{Bibliografia}{9}{chapter.3}%
+\contentsline {section}{\numberline {2.2}Gli LLM nei videogiochi: opportunità e sfide}{7}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}LLM come strumenti per lo sviluppo di videogiochi}{7}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}LLM per il controllo degli NPC}{8}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Sfide e limiti degli LLM}{8}{subsection.2.2.3}%
+\contentsline {chapter}{\numberline {3}L'architettura di AmbraIA}{10}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Specifica PEAS}{10}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Caratteristiche dell'ambiente}{11}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Analisi del problema}{12}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Il lato Unity di AmbraIA}{13}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Conclusioni}{15}{chapter.4}%
+\contentsline {chapter}{Bibliografia}{16}{chapter.4}%

@@ -1,4 +1,4 @@
-\backcite {millington2019artificial}{{ii}{(document)}{Doc-Start}}
+\backcite {millington2019artificial}{{iii}{(document)}{Doc-Start}}
 \backcite {thesims}{{1}{1.1}{section.1.1}}
 \backcite {tomodachilife}{{1}{1.1}{section.1.1}}
 \backcite {pong}{{3}{2.1}{section.2.1}}
@@ -9,3 +9,7 @@
 \backcite {millington2019artificial}{{4}{2.1}{figure.caption.2}}
 \backcite {mariogalaxy}{{4}{2.1}{figure.caption.2}}
 \backcite {darksouls}{{4}{2.1}{figure.caption.2}}
+\backcite {delatorre2024llmr}{{7}{2.2.1}{subsection.2.2.1}}
+\backcite {tomodachilife}{{8}{2.2.2}{subsection.2.2.2}}
+\backcite {song2025llmnpc}{{8}{2.2.2}{subsection.2.2.2}}
+\backcite {park2023generative}{{8}{2.2.2}{subsection.2.2.2}}
