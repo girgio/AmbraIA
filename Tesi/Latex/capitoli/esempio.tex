@@ -178,3 +178,85 @@ La Figura \ref{fig:lato_unity} mostra una panoramica del lato Unity.
 	\caption{Panoramica del lato Unity di AmbraIA.}
 	\label{fig:lato_unity}
 \end{figure}
+
+\subsection{NPCController}
+
+Questo componente permette di eseguire il piano di azioni compilato dal \texttt{Runtime\-Compiler}. Fornisce i metodi per far muovere l'NPC e per interagire con gli oggetti interagibili, attivando animazioni ed effetti. Il movimento viene gestito tramite il NavMesh, una rappresentazione semplificata della geometria della scena che indica le aree calpestabili e gli ostacoli. In questo modo l'agente può calcolare percorsi validi evitando muri e oggetti non attraversabili. Una volta arrivato nei pressi dell'oggetto con cui interagire, l'NPC attiva l'animazione e l'effetto specifico dell'interazione, descritti dall'\texttt{InteractableObject}.
+
+L'\texttt{NPCController} contiene inoltre i dati dello stato interno dell'NPC, che in questo caso sono fame e stanchezza: questi rappresentano i bisogni prioritari che l'NPC deve soddisfare. Entrambi sono rappresentati da valori decimali compresi tra 0 e 1, dove 0 indica uno stato ottimale e 1 un bisogno critico. Fame e stanchezza aumentano gradualmente nel tempo: la fame cresce costantemente, mentre la stanchezza aumenta più rapidamente quando l'NPC si muove e più lentamente quando è fermo. Le interazioni con gli oggetti possono ridurre o aumentare questi valori.
+
+
+\subsection{InteractableObject}
+
+\texttt{InteractableObject} è il modulo che rappresenta l'interazione e viene associato ai GameObject che possono essere interagiti. Contiene quattro informazioni principali:
+
+\begin{itemize}
+	\item il nome dell'interazione (ad esempio ``Usa'' o ``Mangia'');
+	\item l'animazione da attivare;
+	\item la coordinata spaziale in cui l'NPC deve trovarsi per interagire con quell'oggetto;
+	\item l'effetto, cioè il valore di modifica di fame e stanchezza dopo l'interazione.
+\end{itemize}
+
+Se a un GameObject non è associato un \texttt{InteractableObject}, questo non verrà considerato come oggetto interagibile. Il componente include inoltre un campo opzionale, \texttt{oggettoDaAttivare}, che permette di attivare un secondo GameObject al termine dell'interazione: questo consente di realizzare interazioni a più step, come nel caso del fornello che, una volta usato, fa apparire un piatto cotto.
+
+
+\subsection{SceneAnalyzer}
+
+\texttt{SceneAnalyzer} è il modulo che ha il compito di inviare i dati della scena al server tramite richiesta HTTP con endpoint \texttt{/npc/decide}. Il componente definisce il raggio di percezione dell'NPC: tutti gli oggetti interagibili che ricadono entro questo raggio vengono inseriti in una lista, dove ognuno è descritto da nome, tag, azione disponibile, effetto fisiologico e distanza dall'NPC. Nel calcolo dell'effetto, \texttt{SceneAnalyzer} legge direttamente i valori di \texttt{fameEffect} ed \texttt{energyEffect} dall'\texttt{InteractableObject} e li classifica come \textit{hunger}, \textit{energy}, \textit{both} o \textit{none}.
+
+Oltre agli oggetti vicini, l'analyzer invia al server anche lo stato fisiologico corrente dell'NPC, le ultime azioni eseguite e le riflessioni accumulate. Se l'NPC ha una fame o una stanchezza maggiore o uguale a 0.7, l'Analyzer notificherà la criticità. In questo modo il server ha tutte le informazioni necessarie per pianificare le azioni successive. Se il file C\# generato dal server contiene un errore di compilazione, lo \texttt{SceneAnalyzer} notifica l'errore al server e richiede un nuovo tentativo: questo meccanismo di retry può avvenire fino a un massimo di tre volte, sia per errori di compilazione sia per errori HTTP.
+
+Quando un'azione viene completata, lo \texttt{SceneAnalyzer} invia una notifica al server tramite l'endpoint \texttt{/npc/action-done}, in modo che l'azione venga registrata nella memoria a lungo termine. Questa comunicazione avviene separatamente dalla richiesta di pianificazione, così il Memory Stream rimane sempre aggiornato.
+
+\subsection{RuntimeCompiler}
+
+\texttt{RuntimeCompiler} ha il compito di compilare il piano d'azione, scritto in codice sorgente C\# e generato dal server, per poi attaccarlo all'NPC. Unity normalmente compila tutto il codice a tempo di build, ma in questo caso il codice non esiste finché il server non lo genera, quindi è necessario compilarlo durante l'esecuzione del gioco. Per farlo, il componente utilizza Roslyn, il compilatore C\# ufficiale di Microsoft.
+
+Il processo avviene interamente in memoria: se la compilazione ha successo, la classe generata viene attaccata al GameObject dell'NPC, sostituendo quella del piano precedente. Se invece la compilazione fallisce, \texttt{RuntimeCompiler} restituisce una stringa con gli errori riscontrati, che \texttt{SceneAnalyzer} invierà al server per richiedere una correzione.
+
+\section{Il lato server di AmbraIA}
+
+Il lato server ha il compito di elaborare i dati ricevuti da Unity e di generare un piano d'azione sotto forma di file C\#, che viene poi rimandato indietro. È stato implementato interamente in Python. Per orchestrare i diversi sotto-moduli del server ho scelto di utilizzare LangGraph, un framework open source sviluppato da LangChain. LangGraph permette di costruire workflow complessi con agenti di AI generativa, gestendo in modo chiaro il flusso di dati tra un modulo e l'altro. Il server è composto da sei moduli principali:
+
+\begin{itemize}
+	\item \texttt{Memory Stream}: memoria persistente che registra tutte le esperienze dell'NPC.
+	\item \texttt{Retrieval}: recupera dal Memory Stream i ricordi più rilevanti per la situazione attuale.
+	\item \texttt{Planner}: genera un piano d'azione gerarchico basato sulla scena, sui ricordi e sulle riflessioni, tramite una chiamata a un LLM.
+	\item \texttt{Builder}: traduce il piano in codice C\# eseguibile da Unity, sempre tramite LLM.
+	\item \texttt{Inspector}: valida il codice generato, verificando che non contenga errori o placeholder.
+	\item \texttt{Reflector}: analizza periodicamente le esperienze recenti e produce riflessioni di alto livello, tramite una chiamata all'LLM.
+\end{itemize}
+La Figura \ref{fig:lato_server} mostra una panoramica del lato server.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.1\textwidth]{lato_server.pdf}
+	\caption{Panoramica del lato server di AmbraIA.}
+	\label{fig:lato_server}
+\end{figure}
+
+\subsection{Memory Stream}
+
+Il Memory Stream rappresenta la memoria permanente dell'architettura. Consiste in un file JSON in cui sono raccolti tutti i ``ricordi'' dell'NPC, cioè le sue azioni passate. Questo serve a simulare i ricordi umani e aiuta a evitare comportamenti ripetitivi, incoerenti, o che in passato hanno portato a effetti negativi. Ogni ricordo è composto da:
+
+\begin{itemize}
+	\item \texttt{id}: identificativo alfanumerico del ricordo;
+	\item \texttt{content}: descrizione testuale del ricordo;
+	\item \texttt{timestamp}: momento in cui è avvenuto il ricordo;
+	\item \texttt{importance}: numero intero da 1 a 10 che indica l'importanza del ricordo. Non tutte le esperienze hanno lo stesso valore: mangiare una mela quando si ha fame è più significativo che mangiarla quando si è già sazi. Per questo il punteggio viene assegnato dall'LLM al momento della creazione del ricordo, valutando l'impatto sullo stato fisico, la novità dell'evento e l'utilità per le decisioni future. Questo valore influenza il Retrieval, dando più peso ai ricordi ritenuti più importanti;
+	\item \texttt{type}: tipo del ricordo, che può essere \texttt{action}, \texttt{observation} o \texttt{reflection};
+	\item \texttt{embedding}: vettore di 768 numeri che rappresenta il significato del testo. Viene generato tramite \texttt{nomic-embed-text}, un modello eseguito localmente che trasforma una frase in una rappresentazione numerica. Due frasi con significato simile avranno vettori vicini nello spazio, anche se non condividono le stesse parole: ad esempio ``Ho mangiato una mela'' e ``Ho consumato del cibo'' producono embedding molto simili. Questo permette al Retrieval di confrontare i ricordi con la situazione attuale in modo semantico, senza dover cercare parole chiave.
+\end{itemize}
+
+La Lista \ref{lst:ricordo} mostra un esempio di ricordo salvato nel Memory Stream.
+
+\begin{lstlisting}[style=jsonstyle, caption={Esempio di ricordo nel Memory Stream.}, label={lst:ricordo}]
+	{
+		"id": "mem_a3f2c1d4",
+		"content": "Mangia su Mela",
+		"timestamp": 1726000000.0,
+		"importance": 6,
+		"type": "action",
+		"embedding": [0.12, -0.34, 0.78, "...altri 765 valori..."]
+	}
+\end{lstlisting}

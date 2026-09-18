@@ -55,7 +55,20 @@
 % gli stili di capitolo disponibili sono i seguenti:
 % SeSa, Sonny, Lenny, Rejne, Conny, PetersLenny, Bjornstrup, Glenn, Bjarne, Nicola
 
+\usepackage{listings}
+\usepackage{xcolor}
 
+\lstdefinestyle{jsonstyle}{
+	basicstyle=\ttfamily\small,
+	breaklines=true,
+	frame=single,
+	numbers=left,
+	numberstyle=\tiny,
+	keywordstyle=\color{blue},
+	stringstyle=\color{red},
+	commentstyle=\color{green!60!black},
+	showstringspaces=false
+}
 
 
 \linespread{1.5}
@@ -103,6 +116,8 @@
 
 % ringraziamenti
 \include{covermatter/ringraziamenti}
+
+
 
 % se hai intenzione di donare un albero tramite treedom
 %\include{covermatter/treedom}

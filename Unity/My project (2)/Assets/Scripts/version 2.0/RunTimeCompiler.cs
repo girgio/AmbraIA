@@ -10,10 +10,6 @@ using Microsoft.CodeAnalysis.Emit;
 
 /// <summary>
 /// Compila codice C# a runtime con Roslyn e lo attacca al GameObject.
-/// Fix rispetto alla versione originale:
-///  - Rimuove il componente AiAction precedente prima di aggiungerne uno nuovo
-///    (evita accumulo di script e comportamenti sovrapposti)
-///  - Raccoglie solo errori (non warning) e li restituisce come stringa
 /// </summary>
 public class RuntimeCompiler : MonoBehaviour
 {
