@@ -244,7 +244,7 @@ Il Memory Stream rappresenta la memoria permanente dell'architettura. Consiste i
 	\item \texttt{content}: descrizione testuale del ricordo;
 	\item \texttt{timestamp}: momento in cui è avvenuto il ricordo;
 	\item \texttt{importance}: numero intero da 1 a 10 che indica l'importanza del ricordo. Non tutte le esperienze hanno lo stesso valore: mangiare una mela quando si ha fame è più significativo che mangiarla quando si è già sazi. Per questo il punteggio viene assegnato dall'LLM al momento della creazione del ricordo, valutando l'impatto sullo stato fisico, la novità dell'evento e l'utilità per le decisioni future. Questo valore influenza il Retrieval, dando più peso ai ricordi ritenuti più importanti;
-	\item \texttt{type}: tipo del ricordo, che può essere \texttt{action}, \texttt{observation} o \texttt{reflection};
+	\item \texttt{type}: tipo del ricordo, che può essere \texttt{action} o \texttt{reflection};
 	\item \texttt{embedding}: vettore di 768 numeri che rappresenta il significato del testo. Viene generato tramite \texttt{nomic-embed-text}, un modello eseguito localmente che trasforma una frase in una rappresentazione numerica. Due frasi con significato simile avranno vettori vicini nello spazio, anche se non condividono le stesse parole: ad esempio ``Ho mangiato una mela'' e ``Ho consumato del cibo'' producono embedding molto simili. Questo permette al Retrieval di confrontare i ricordi con la situazione attuale in modo semantico, senza dover cercare parole chiave.
 \end{itemize}
 
@@ -260,3 +260,120 @@ La Lista \ref{lst:ricordo} mostra un esempio di ricordo salvato nel Memory Strea
 		"embedding": [0.12, -0.34, 0.78, "...altri 765 valori..."]
 	}
 \end{lstlisting}
+
+Retriaval
+\subsection{Retrieval}
+
+Il Retrieval è il modulo che si occupa di recuperare dal Memory Stream i ricordi più utili per la situazione attuale. L'LLM, da solo, non può ricevere l'intera memoria dell'NPC: dopo diverse ore di gioco il numero di ricordi accumulati diventa troppo elevato per essere inserito in un singolo prompt. È quindi necessario un meccanismo di selezione che scelga solo i ricordi più rilevanti; d'altronde anche la mente umana estrae specifici ricordi in specifiche situazioni.
+
+Il Retrieval estrae i primi dieci ricordi in base a un punteggio calcolato combinando tre fattori:
+
+\begin{itemize}
+	\item \textbf{Recency}: quanto è recente il ricordo. Un'esperienza appena vissuta è spesso più utile e adatta al contesto attuale di una di diverse ore fa. Il decadimento è esponenziale, così i ricordi invecchiano rapidamente all'inizio e più lentamente col passare del tempo;
+	\item \textbf{Importance}: quanto è importante il ricordo, secondo il punteggio da 1 a 10 assegnato dall'LLM al momento della creazione del ricordo;
+ 	\item \textbf{Relevance}: quanto il ricordo è semanticamente simile alla situazione attuale. Per calcolarla, ogni ricordo e la situazione corrente vengono trasformati in embedding, cioè vettori di 768 numeri che ne rappresentano il significato. Due testi con significato simile producono vettori vicini nello spazio, anche se non condividono le stesse parole. La similarità tra i due vettori si misura tramite la similarità del coseno, che restituisce un valore tra 0 e 1: valori vicini a 1 indicano che il ricordo è semanticamente pertinente alla situazione attuale, valori vicini a 0 indicano che è poco rilevante.
+\end{itemize}
+
+Il punteggio finale è una combinazione pesata dei tre fattori, secondo la formula:
+
+\begin{equation}
+	\text{score} = \alpha_{\text{recency}} \cdot \text{recency} + \alpha_{\text{importance}} \cdot \text{importance} + \alpha_{\text{relevance}} \cdot \text{relevance}
+\end{equation}
+
+dove i pesi sono $\alpha_{\text{recency}} = 0.3$, $\alpha_{\text{importance}} = 0.3$ e $\alpha_{\text{relevance}} = 0.4$. Il peso maggiore dato alla relevance riflette l'importanza della pertinenza contestuale: se l'NPC ha fame, un ricordo legato al cibo è più utile di un ricordo recente ma su un argomento diverso.
+
+La formula completa per il calcolo del punteggio, tenendo conto di tutti e tre i fattori, è la seguente:
+
+\begin{equation}
+	\text{score}(m) = \alpha_r \cdot \frac{1}{1 + \lambda \cdot \Delta t_m} + \alpha_i \cdot \frac{i_m}{10} + \alpha_v \cdot \cos(\vec{e}_m, \vec{e}_q)
+\end{equation}
+
+dove:
+\begin{itemize}
+	\item $\Delta t_m$ è il tempo trascorso (in ore) dal momento in cui il ricordo $m$ è stato creato;
+	\item $\lambda = 0.99$ è il fattore di decadimento;
+	\item $i_m$ è l'importance del ricordo $m$;
+	\item $\vec{e}_m$ è l'embedding del ricordo $m$;
+	\item $\vec{e}_q$ è l'embedding della query, cioè la descrizione della situazione attuale.
+\end{itemize}
+
+I dieci ricordi con il punteggio più alto vengono passati al Planner come contesto storico, così che il piano generato tenga conto delle esperienze passate dell'NPC.
+
+\subsection{Planner}
+
+Il Planner è il primo nodo del grafo a chiamare l'LLM. Il suo compito è generare un piano d'azione in linguaggio naturale, che verrà poi utilizzato come input dal nodo successivo, il Builder. Riceve come input i ricordi estratti dal Retrieval, tutti gli oggetti interagibili presenti nella scena, lo stato fisiologico corrente dell'NPC, le azioni recenti e le riflessioni accumulate.
+
+Il formato della risposta è un piano d'azione composto da un obiettivo principale e da un massimo di tre sotto-obiettivi, ciascuno con una priorità (alta, media o bassa). Ogni sotto-obiettivo descrive l'azione da compiere e l'oggetto su cui agire, in modo che il Builder comprenda in che ordine devono essere eseguite le azioni.
+
+La Lista \ref{lst:piano} mostra un esempio di piano generato dal Planner.
+
+\begin{lstlisting}[style=jsonstyle, caption={Esempio di piano generato dal Planner.}, label={lst:piano}]
+	GOAL: Mantenermi in salute
+	
+	SOTTO-OBIETTIVO 1 [PRIORITA: ALTA]: Soddisfare la fame
+	- Azione: Vai a Mela
+	- Azione: Mangia su Mela
+	
+	SOTTO-OBIETTIVO 2 [PRIORITA: MEDIA]: Riposarmi
+	- Azione: Vai a Sedia
+	- Azione: Siediti su Sedia
+\end{lstlisting}
+
+Il Planner tiene conto di alcune regole fondamentali: se la fame o la stanchezza superano la soglia critica di 0.7, il bisogno corrispondente diventa la priorità assoluta; le azioni già eseguite di recente non tendono ad essere ripetute; se le riflessioni suggeriscono di variare il comportamento, il piano deve riflettere questo cambiamento; se non ci sono bisogni urgenti, l'NPC deve esplorare nuovi oggetti o attività.
+
+\subsection{Builder}
+
+Il Builder converte il piano d'azione in linguaggio naturale, generato dal Planner, in codice C\# eseguibile su Unity. Come il Planner, riceve in input la lista degli oggetti interagibili con le rispettive azioni valide e le distanze dall'NPC. In base alle azioni decise dal Planner, il Builder mappa ogni interazione con un massimo di due istruzioni:
+
+\begin{itemize}
+	\item \texttt{MoveToTargetAndWait}: muove l'NPC verso l'oggetto target, se questo si trova a una distanza superiore a un'unità;
+	\item \texttt{InteractWithAndWait}: obbligatoria per far avvenire l'interazione, avvia l'animazione e applica l'effetto fisiologico corrispondente.
+\end{itemize}
+
+La Lista \ref{lst:codice_generato} mostra un esempio di codice C\# generato dal Builder.
+
+\begin{lstlisting}[style=jsonstyle, caption={Esempio di codice C\# generato dal Builder.}, label={lst:codice_generato}]
+	using UnityEngine;
+	using System.Collections;
+	
+	public class AiAction : MonoBehaviour
+	{
+		void Start()
+		{
+			StartCoroutine(ExecutePlan());
+		}
+		
+		IEnumerator ExecutePlan()
+		{
+			NPCController controller = GetComponent<NPCController>();
+			if (controller == null) yield break;
+			
+			// SOTTO-OBIETTIVO 1: Soddisfare la fame [PRIORITA: ALTA]
+			yield return StartCoroutine(controller.MoveToTargetAndWait("Mela"));
+			yield return StartCoroutine(controller.InteractWithAndWait("Mela", "Mangia"));
+			
+			// SOTTO-OBIETTIVO 2: Riposarmi [PRIORITA: MEDIA]
+			yield return StartCoroutine(controller.MoveToTargetAndWait("Sedia"));
+			yield return StartCoroutine(controller.InteractWithAndWait("Sedia", "Siediti"));
+			
+			Destroy(this);
+			yield break;
+		}
+	}
+\end{lstlisting}
+
+Il Builder opera in modalità deterministica, con temperatura impostata a zero, per ridurre al minimo la variabilità dell'output. Il codice generato è vincolato a una struttura fissa: la classe deve chiamarsi \texttt{AiAction}, deve ereditare da \texttt{MonoBehaviour} e deve usare esclusivamente i due metodi esposti dall'\texttt{NPCController}. Al termine dell'esecuzione, la classe si autodistrugge tramite \texttt{Destroy(this)}, così che il componente non si accumuli sull'NPC tra un piano e il successivo.
+
+\subsection{Inspector}
+
+L'Inspector è l'ultimo nodo del grafo e ha il compito di controllare che il codice generato dal Builder non contenga errori gravi. Se il controllo fallisce, il codice viene rimandato al Builder per un ulteriore tentativo, fino a un massimo di tre.
+
+L'Inspector verifica tre categorie di problemi:
+
+\begin{itemize}
+	\item \textbf{Placeholder}: controlla che il codice non contenga pseudo-codice, commenti al posto di istruzioni reali (es. \texttt{if (/* condizione */)}), oppure testi come ``TODO'' o ``da implementare'';
+	\item \textbf{Nomi degli oggetti}: estrae i nomi degli oggetti usati nelle chiamate a \texttt{MoveToTargetAndWait} e \texttt{InteractWithAndWait} e verifica che corrispondano a oggetti realmente presenti nella scena;
+	\item \textbf{Nomi dei componenti}: controlla che il nome del controller utilizzato nel codice sia corretto (ad esempio, che sia \texttt{NPCController} e non una variante inventata dall'LLM).
+\end{itemize}
+
+Può capitare che il codice contenga altri tipi di errore che l'Inspector non è in grado di rilevare, come errori di sintassi o di tipo. In questo caso, quando Unity tenta di compilare il codice, genera un errore e lo rispedisce al server. Il grafo riparte direttamente dal Builder, saltando Retrieval e Planner, e il Builder riceve l'errore nel prompt per correggere il codice. In questo modo, l'Inspector ha il compito principale di individuare gli errori immediati e di velocizzare il flusso di lavoro, evitando di far arrivare a Unity codice che sarebbe sicuramente scartato.

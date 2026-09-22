@@ -25,5 +25,9 @@
 \contentsline {subsection}{\numberline {3.4.4}RuntimeCompiler}{16}{subsection.3.4.4}%
 \contentsline {section}{\numberline {3.5}Il lato server di AmbraIA}{16}{section.3.5}%
 \contentsline {subsection}{\numberline {3.5.1}Memory Stream}{18}{subsection.3.5.1}%
-\contentsline {chapter}{\numberline {4}Conclusioni}{21}{chapter.4}%
-\contentsline {chapter}{Bibliografia}{22}{chapter.4}%
+\contentsline {subsection}{\numberline {3.5.2}Retrieval}{20}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Planner}{21}{subsection.3.5.3}%
+\contentsline {subsection}{\numberline {3.5.4}Builder}{22}{subsection.3.5.4}%
+\contentsline {subsection}{\numberline {3.5.5}Inspector}{24}{subsection.3.5.5}%
+\contentsline {chapter}{\numberline {4}Conclusioni}{26}{chapter.4}%
+\contentsline {chapter}{Bibliografia}{27}{chapter.4}%
