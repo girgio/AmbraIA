@@ -649,7 +649,9 @@ async def analizza_scena(request: AnalyzeSceneRequest):
     )
 
     template_text = "\n".join(
-        f"- {t['nome']}: azione='{t['azione']}', fame=[{t['fame_min']}..{t['fame_max']}], energy=[{t['energy_min']}..{t['energy_max']}]"
+        f"- {t['nome']}: azione='{t['azione']}', "
+        f"fame=[{t.get('fame_min', 0)}..{t.get('fame_max', 0)}], "
+        f"energy=[{t.get('energy_min', t.get('energia_min', 0))}..{t.get('energy_max', t.get('energia_max', 0))}]"
         for t in request.template_disponibili
     )
 
@@ -693,6 +695,7 @@ async def analizza_scena(request: AnalyzeSceneRequest):
 
 @app.post("/npc/decide")
 async def ricevi_scena_e_decidi(report: ReportScena):
+    start = time.time()
     scene_summary = build_scene_summary(report)
     valid_object_names = [obj.name for obj in report.oggetti_vicini]
     valid_actions_map = {obj.name: obj.available_action for obj in report.oggetti_vicini}
@@ -733,6 +736,9 @@ async def ricevi_scena_e_decidi(report: ReportScena):
                 "last_code": stato_finale.get("generated_code"),
             },
         )
+
+    elapsed = time.time() - start
+    logger.info(f"[TIMING] Richiesta completata in {elapsed:.2f}s")
 
     return {
         "status": "success",

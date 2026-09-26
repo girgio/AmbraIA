@@ -29,5 +29,10 @@
 \contentsline {subsection}{\numberline {3.5.3}Planner}{21}{subsection.3.5.3}%
 \contentsline {subsection}{\numberline {3.5.4}Builder}{22}{subsection.3.5.4}%
 \contentsline {subsection}{\numberline {3.5.5}Inspector}{24}{subsection.3.5.5}%
-\contentsline {chapter}{\numberline {4}Conclusioni}{26}{chapter.4}%
-\contentsline {chapter}{Bibliografia}{27}{chapter.4}%
+\contentsline {subsection}{\numberline {3.5.6}Reflector}{25}{subsection.3.5.6}%
+\contentsline {section}{\numberline {3.6}Configurazione scena}{25}{section.3.6}%
+\contentsline {chapter}{\numberline {4}Sperimentazione e Risultati}{27}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Setup sperimentale}{27}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Criteri di valutazione}{29}{section.4.2}%
+\contentsline {chapter}{\numberline {5}Conclusioni}{31}{chapter.5}%
+\contentsline {chapter}{Bibliografia}{32}{chapter.5}%

@@ -92,6 +92,7 @@ Per descrivere formalmente l'agente e il suo ambiente, si utilizza il modello PE
 		\item Varietà dei comportamenti nel tempo
 		\item Tasso di successo della compilazione del codice C\# generato
 		\item Tempo di risposta del server, cioè la latenza tra richiesta e piano generato
+		\item Adattabilità a scene nuove, cioè il sistema configura scene non preconfigurate
 	\end{itemize}
 	
 	\item[Environment] Gli elementi che formano l'ambiente sono:
@@ -377,3 +378,108 @@ L'Inspector verifica tre categorie di problemi:
 \end{itemize}
 
 Può capitare che il codice contenga altri tipi di errore che l'Inspector non è in grado di rilevare, come errori di sintassi o di tipo. In questo caso, quando Unity tenta di compilare il codice, genera un errore e lo rispedisce al server. Il grafo riparte direttamente dal Builder, saltando Retrieval e Planner, e il Builder riceve l'errore nel prompt per correggere il codice. In questo modo, l'Inspector ha il compito principale di individuare gli errori immediati e di velocizzare il flusso di lavoro, evitando di far arrivare a Unity codice che sarebbe sicuramente scartato.
+
+\subsection{Reflector}
+
+Il Reflector non è un nodo del grafo, ma un modulo indipendente che viene eseguito ogni cinque azioni completate. Come input riceve i ricordi più recenti del Memory Stream, in particolare le ultime venti azioni e osservazioni. Il Reflector chiede all'LLM di generare una o più riflessioni di alto livello sui comportamenti recenti dell'NPC, identificando pattern, abitudini ricorrenti o comportamenti poco coerenti.
+
+Le riflessioni generate vengono salvate nel Memory Stream come ricordi di tipo \texttt{reflection}, con un punteggio di importanza fissato a 9. In questo modo, grazie alla formula del Retrieval, tenderanno a essere recuperate spesso e a influenzare le pianificazioni successive; di conseguenza il Planner terrà conto di queste osservazioni.
+
+La Lista \ref{lst:riflessione} mostra un esempio di riflessione generata dal Reflector.
+
+\begin{lstlisting}[style=jsonstyle, caption={Esempio di riflessione generata dal Reflector.}, label={lst:riflessione}]
+	L'NPC tende a mangiare sempre la stessa mela.
+	Dovrebbe esplorare altre fonti di cibo disponibili nella scena.
+\end{lstlisting}
+
+\section{Configurazione scena}
+
+AmbraIA prevede una configurazione della scena semi-automatica. L'utente deve inserire la proprietà \textit{static} sul pavimento e su tutti i GameObject che sono considerati ostacoli per il movimento. Deve poi creare dei Template per gli oggetti interagibili, creabili dal menù a tendina degli asset, in cui specifica nome, animazione ed effetto, più due campi opzionali dove può aggiungere delle parole chiave per il nome o per il tag degli oggetti. Ad esempio, se l'azione è ``siediti'' può inserire parole chiave come ``sedia, divano, letto, poltrona''.
+
+A questo punto, dalla barra in alto, sotto la voce ``NPC'' può avviare l'analisi che mappa tutti gli oggetti con un tag come interagibili e associa a ciascuno un \texttt{InteractableObject} in base al template. L'associazione può avvenire in due modi: per corrispondenza di parole chiave, oppure, in mancanza di corrispondenza, tramite una chiamata all'LLM che, ricevendo la lista di oggetti e i template disponibili, deciderà a quale template associare ogni oggetto.
+
+Perché l'NPC venga riconosciuto dal sistema, il suo GameObject deve avere un componente \texttt{NPCController} attaccato, oltre a \texttt{SceneAnalyzer}, \texttt{RuntimeCompiler}, \texttt{NavMeshAgent} e \texttt{Animator}. Il tool cerca un \texttt{NPCController} nella scena per verificare se l'NPC è già presente e, se non lo trova, lo istanzia automaticamente dalla posizione $(0,0,0)$.
+
+A questo punto la scena è pronta, ma nulla vieta all'utente di apportare ulteriori modifiche alle interazioni o alle associazioni qualora non fosse soddisfatto del risultato.
+
+\chapter{Sperimentazione e Risultati}
+
+\section{Setup sperimentale}
+
+L'architettura è stata testata principalmente su una singola scena che funge da soggiorno, contenente sei oggetti interagibili: un PC, una sedia, un divano, una console, un bicchiere di vino e una ciotola di cibo. La Tabella \ref{tab:setup} riassume i dettagli della configurazione utilizzata durante i test.
+
+\begin{table}[H]
+	\centering
+	\caption{Configurazione del setup sperimentale.}
+	\label{tab:setup}
+	\begin{tabularx}{\textwidth}{|l|X|l|}
+		\hline
+		\textbf{Parametro} & \textbf{Valore} \\
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Ambiente}} \\
+		\hline
+		Tipo di scena & Soggiorno/camera da letto \\
+		Oggetti interagibili & 6 (PC, sedia, divano, console, bicchiere di vino, ciotola di cibo) \\
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Template}} \\
+		\hline
+		Template creati & PC, Cibo, Videogioco, Bevande, Letto, Sedia, Libro \\
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Modelli}} \\
+		\hline
+		Modello LLM & llama3.1 \\
+		Modello di embedding & nomic-embed-text \\
+		Dimensione embedding & 768 \\
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Parametri fisiologici}} \\
+		\hline
+		Consumo fame passivo & 0.0007/s \\
+		Consumo energia movimento & 0.007/s \\
+		Consumo energia da fermo & 0.0004/s \\
+		Soglia critica & 0.7 \\
+		Cooldown pianificazione & 3.0s \\
+		Ricordi recuperati (top-N) & 10 \\
+		Pesi Retrieval & 0.3 recency, 0.3 importance, 0.4 relevance \\
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Configurazione server}} \\
+		\hline
+		Intervallo Reflector & ogni 5 azioni \\
+		Max tentativi Builder & 3 \\
+		\hline
+	\end{tabularx}
+\end{table}
+
+\newpage
+La Figura \ref{fig:scena_test} mostra la scena utilizzata durante i test, con l'NPC al centro della scena.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{scena.pdf}
+	\caption{La scena di test con l'NPC e gli oggetti interagibili.}
+	\label{fig:scena_test}
+\end{figure}
+
+\section{Criteri di valutazione}
+
+Per valutare i risultati dell'architettura bisogna considerare principalmente metriche qualitative rispetto a quantitative, poiché il comportamento di un NPC non è misurabile con metriche tradizionali come accuracy o precision. La credibilità e la coerenza di un agente emergono dall'osservazione del comportamento nel tempo, non dal calcolo di un singolo valore numerico. Fanno eccezione i tempi di risposta e il tasso di successo della compilazione, che sono intrinsecamente quantitativi. Le metriche utilizzate per valutare il sistema sono riassunte nella Tabella \ref{tab:criteri}.
+
+\begin{table}[h]
+	\centering
+	\caption{Criteri di valutazione adottati.}
+	\begin{tabularx}{\textwidth}{|l|X|l|}
+		\hline
+		\label{tab:criteri}
+		\textbf{Criterio} & \textbf{Descrizione} & \textbf{Tipo} \\
+		\hline
+		Coerenza delle azioni & L'NPC si definisce coerente se compie azioni che riflettono il suo stato fisiologico, ad esempio mangia se ha fame, oppure si intrattiene o studia se non ha bisogno di mangiare o riposare. & Qualitativa \\
+		\hline
+		Varietà comportamentale & L'NPC ha una buona varietà comportamentale se non tende a ripetere le stesse azioni in presenza di oggetti diversi ma con effetto simile. & Qualitativa \\
+		\hline
+		Tasso di successo compilazione & Numero di compilazioni riuscite diviso il numero di compilazioni totali. & Quantitativa \\
+		\hline
+		Latenza & Differenza di tempo tra la richiesta e la risposta. & Quantitativa \\
+		\hline
+		Adattabilità & Il sistema si adatta a nuove scene. & Qualitativa \\
+		\hline
+	\end{tabularx}
+\end{table}
