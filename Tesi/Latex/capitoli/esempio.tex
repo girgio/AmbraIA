@@ -412,7 +412,7 @@ L'architettura è stata testata principalmente su una singola scena che funge da
 	\centering
 	\caption{Configurazione del setup sperimentale.}
 	\label{tab:setup}
-	\begin{tabularx}{\textwidth}{|l|X|l|}
+	\begin{tabularx}{\textwidth}{|l|X|}
 		\hline
 		\textbf{Parametro} & \textbf{Valore} \\
 		\hline
@@ -424,6 +424,15 @@ L'architettura è stata testata principalmente su una singola scena che funge da
 		\multicolumn{2}{|c|}{\textbf{Template}} \\
 		\hline
 		Template creati & PC, Cibo, Videogioco, Bevande, Letto, Sedia, Libro \\
+		\hline
+		\multicolumn{2}{|c|}{\textbf{Effetti delle interazioni}} \\
+		\hline
+		PC (Lavora) & fame: 0, energia: +0.3 \\
+		Sedia (Siediti) & fame: 0, energia: -0.3 \\
+		Divano (Siediti) & fame: 0, energia: -0.3 \\
+		Console (Gioca) & fame: 0, energia: 0 \\
+		Bicchiere di vino (Bevi) & fame: -0.15, energia: 0 \\
+		Ciotola di cibo (Mangia) & fame: -0.55, energia: 0 \\
 		\hline
 		\multicolumn{2}{|c|}{\textbf{Modelli}} \\
 		\hline
@@ -460,10 +469,11 @@ La Figura \ref{fig:scena_test} mostra la scena utilizzata durante i test, con l'
 \end{figure}
 
 \section{Criteri di valutazione}
+\label{sec:criteri}
 
 Per valutare i risultati dell'architettura bisogna considerare principalmente metriche qualitative rispetto a quantitative, poiché il comportamento di un NPC non è misurabile con metriche tradizionali come accuracy o precision. La credibilità e la coerenza di un agente emergono dall'osservazione del comportamento nel tempo, non dal calcolo di un singolo valore numerico. Fanno eccezione i tempi di risposta e il tasso di successo della compilazione, che sono intrinsecamente quantitativi. Le metriche utilizzate per valutare il sistema sono riassunte nella Tabella \ref{tab:criteri}.
 
-\begin{table}[h]
+\begin{table}[H]
 	\centering
 	\caption{Criteri di valutazione adottati.}
 	\begin{tabularx}{\textwidth}{|l|X|l|}
@@ -483,3 +493,33 @@ Per valutare i risultati dell'architettura bisogna considerare principalmente me
 		\hline
 	\end{tabularx}
 \end{table}
+
+\section{Risultati}
+
+\subsection{Coerenza delle azioni}
+
+L'NPC ha sempre dato priorità ai propri bisogni critici. Quando la fame o la stanchezza superavano la soglia critica, il Planner assegnava loro priorità alta nel piano, privilegiando le azioni con effetti maggiori sul bisogno in questione. Questo comportamento ha ridotto la varietà delle azioni nei momenti di criticità, ma ha confermato il funzionamento della memoria: i ricordi recuperati dal Retrieval hanno permesso all'NPC di scegliere le interazioni che in passato avevano prodotto i risultati migliori.
+
+\subsection{Varietà comportamentale}
+
+Il comportamento dell'NPC è rimasto vario nel complesso. Quando lo stato fisiologico non era critico, l'NPC ha esplorato nuove interazioni, provando oggetti diversi presenti nella scena. Si è comunque osservata una tendenza a ripetere alcune azioni, in particolare quelle che migliorano lo stato fisiologico: questo comportamento è coerente con il funzionamento del sistema, perché il Retrieval tende a recuperare ricordi legati a esperienze positive, portando il Planner a preferire azioni già note come efficaci.
+
+\subsection{Tasso di successo della compilazione}
+
+Su circa trenta esecuzioni, la compilazione del codice C\# generato dal Builder è fallita due volte. In entrambi i casi, il sistema ha gestito l'errore tramite il meccanismo di retry: il codice non compilato è stato rimandato al Builder con l'errore nel prompt, e il secondo tentativo ha prodotto codice valido. Il tasso di successo complessivo si attesta quindi intorno al 93\%.
+
+\subsection{Adattabilità a scene nuove}
+
+L'adattabilità del sistema è stata valutata osservando il comportamento del meccanismo di configurazione automatica. Nella scena di test erano presenti sei oggetti interagibili: tre di questi sono stati associati ai template tramite matching automatico per parole chiave, mentre i restanti tre, non corrispondendo a nessuna parola chiave definita, sono stati inviati al server e configurati tramite una chiamata all'LLM. L'intera configurazione è stata completata in circa 1440 ms. Questo dimostra che il sistema è in grado di associare template a oggetti non preconfigurati senza intervento manuale.
+
+\subsection{Latenza}
+
+La latenza misura il tempo che intercorre tra l'invio della richiesta da Unity e la ricezione del piano generato dal server. Nei test condotti, la latenza media per la generazione di un piano si è attestata intorno ai 57 secondi. Questo valore è dominato dalle due chiamate all'LLM, una per il Planner e una per il Builder, che insieme occupano la maggior parte del tempo totale di risposta.
+
+Un valore di latenza di questa entità non è compatibile con un utilizzo interattivo in tempo reale, ma risulta accettabile per una dimostrazione prototipale: la generazione del piano avviene in background mentre l'NPC completa il piano precedente, quindi il gioco non si blocca in attesa della risposta. Il valore dipende in larga misura dal modello linguistico utilizzato e dall'hardware su cui viene eseguito; modelli più piccoli o GPU dedicate potrebbero ridurre sensibilmente il tempo di risposta.
+
+\subsection{Considerazioni generali}
+
+I risultati osservati sono coerenti con gli obiettivi stabiliti. Il Memory Stream, il Retrieval e il Reflector hanno prodotto un comportamento vario e coerente con la situazione, e il meccanismo di retry ha garantito la robustezza del flusso di generazione del codice.
+
+Nel complesso, i criteri di valutazione definiti nella Sezione \ref{sec:criteri} sono stati soddisfatti: l'NPC ha mostrato comportamenti coerenti con il proprio stato fisiologico, una buona varietà comportamentale, un tasso di successo della compilazione pari al 93\%, e la capacità di adattarsi a oggetti non preconfigurati. La latenza rimane il principale limite del prototipo, ma non compromette la validità dell'architettura e lascia spazio a ottimizzazioni future.

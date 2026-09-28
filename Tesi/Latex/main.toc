@@ -34,5 +34,12 @@
 \contentsline {chapter}{\numberline {4}Sperimentazione e Risultati}{27}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Setup sperimentale}{27}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Criteri di valutazione}{29}{section.4.2}%
-\contentsline {chapter}{\numberline {5}Conclusioni}{31}{chapter.5}%
-\contentsline {chapter}{Bibliografia}{32}{chapter.5}%
+\contentsline {section}{\numberline {4.3}Risultati}{30}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Coerenza delle azioni}{30}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Varietà comportamentale}{31}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Tasso di successo della compilazione}{31}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Adattabilità a scene nuove}{31}{subsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.3.5}Latenza}{32}{subsection.4.3.5}%
+\contentsline {subsection}{\numberline {4.3.6}Considerazioni generali}{32}{subsection.4.3.6}%
+\contentsline {chapter}{\numberline {5}Conclusioni}{33}{chapter.5}%
+\contentsline {chapter}{Bibliografia}{34}{chapter.5}%
