@@ -58,7 +58,7 @@ Questi approcci hanno molti vantaggi: sono strutturalmente semplici, possono ess
 
 \section{Gli LLM nei videogiochi: opportunità e sfide}
 
-L'intelligenza artificiale generativa e i Large Language Model rappresentano uno dei più grandi risultati dell'informatica moderna. Ormai gli LLM si sono introdotti nella maggior parte degli ambiti, lavorativi e non. Gli LLM sono modelli linguistici addestrati su enormi quantità di dati, che generano principalmente testo, ma si sta puntando sempre di più verso modelli General Purpose, in grado di generare anche immagini, audio, video e altro ancora.
+L'intelligenza artificiale generativa e i Large Language Models rappresentano uno dei più grandi risultati dell'informatica moderna. Ormai gli LLM si sono introdotti nella maggior parte degli ambiti, lavorativi e non. Gli LLM sono modelli linguistici addestrati su enormi quantità di dati, che generano principalmente testo, ma si sta puntando sempre di più verso modelli General Purpose, in grado di generare anche immagini, audio, video e altro ancora.
 
 \subsection{LLM come strumenti per lo sviluppo di videogiochi}
 
@@ -68,15 +68,15 @@ Anche nel mondo dei videogiochi gli LLM sono sbarcati, aiutando gli sviluppatori
 
 Gli LLM inoltre assistono anche nella creazione di NPC. I comportamenti umani sono molto complessi, frutto di processi cognitivi articolati che comprendono l'analisi di ricordi ed esperienze passate, la percezione del mondo e lo stato fisiologico ed emotivo. I videogiochi che vogliono simulare i comportamenti umani, anche solo in parte, utilizzano per la maggior parte macchine a stati finiti enormi e molto specifiche per il gioco sviluppato; un esempio già citato è \textit{Tomodachi Life} \cite{tomodachilife}. Gli LLM possono essere utilizzati per semplificare queste architetture.
 
-Nel paper scientifico ``LLM-Driven NPCs: Cross-Platform Dialogue System for Games and Social Platforms'' di Song \cite{song2025llmnpc} viene proposto un prototipo di NPC che dialoga tramite LLM con il giocatore sia in-game tramite Unity, sia fuori dal gioco su Discord. Parlare nel gioco aumenta un parametro che indica il gradimento dell'NPC, cioè il grado di familiarità tra il giocatore e l'NPC. Più il gradimento è alto, più l'NPC sarà confidente verso il giocatore. In questo caso l'LLM ha il solo compito di generare output testuali in base agli input testuali del giocatore.
+Nel paper scientifico ``LLM-Driven NPCs: Cross-Platform Dialogue System for Games and Social Platforms'' di Song \cite{song2025llmnpc} viene proposto un prototipo di NPC che dialoga tramite LLM con il giocatore sia in-game tramite Unity, sia fuori dal gioco su Discord. Parlare nel gioco aumenta un parametro che indica il gradimento dell'NPC, cioè il grado di familiarità tra il giocatore e il personaggio. Più il gradimento è alto, più l'NPC sarà confidente verso il giocatore. In questo caso l'LLM ha il solo compito di generare output testuali in base agli input testuali del giocatore.
 
-I Large Language Model però sono stati usati anche per elaborare decisioni più complesse, come in ``Generative Agents: Interactive Simulacra of Human Behavior'' di Park et al. \cite{park2023generative}, in cui viene progettata e implementata un'architettura che simula una cittadina di persone, le quali interagiscono tra loro, hanno la loro routine e la loro personalità. L'architettura cerca di simulare alcuni processi cognitivi della mente umana, come il deposito di ricordi in un database, l'estrazione di ricordi in base alla loro importanza e recenza, o la riflessione periodica sulle proprie azioni. Questo è un esempio di IA di strategia e decision making, poiché gli abitanti della cittadina interagiscono tra loro e prendono decisioni in base al mondo circostante e allo stato dell'NPC.
+I Large Language Models però sono stati usati anche per elaborare decisioni più complesse, come in ``Generative Agents: Interactive Simulacra of Human Behavior'' di Park et al. \cite{park2023generative}, in cui viene progettata e implementata un'architettura che simula una cittadina di persone, le quali interagiscono tra loro, hanno la loro routine e la loro personalità. L'architettura cerca di simulare alcuni processi cognitivi della mente umana, come il deposito di ricordi in un database, l'estrazione di ricordi in base alla loro importanza e recenza, o la riflessione periodica sulle proprie azioni. Questo è un esempio di IA di strategia e decision making, poiché gli abitanti della cittadina interagiscono tra loro e prendono decisioni in base al mondo circostante e al loro stato attuale.
 
 \subsection{Sfide e limiti degli LLM}
 
 Nonostante le opportunità offerte, gli LLM presentano anche diverse criticità. Possono essere soggetti ad allucinazioni, generando informazioni non veritiere o incoerenti con il contesto; i tempi di esecuzione possono essere elevati, soprattutto quando il modello viene eseguito localmente; inoltre, in assenza di un'architettura adeguata, tendono a ripetere le stesse risposte o gli stessi comportamenti. Queste sfide rendono necessario progettare sistemi che affianchino all'LLM componenti deterministiche in grado di gestire memoria, coerenza e affidabilità.
 
-AmbraIA prende ispirazione dalle architetture sopraccitate e cerca di creare un NPC che possa interagire in un ambiente 3D di Unity, prendendo decisioni coerenti con il suo stato fisiologico e la sua percezione dell'ambiente. AmbraIA non è una struttura pensata per un videogioco o un ambiente specifico, grazie a un sistema semi-automatico di matching tra GameObject e interazioni/animazioni definite dallo sviluppatore. L'LLM viene utilizzato da AmbraIA per pianificare le azioni, mappare le azioni in C\# e generare riflessioni periodiche. Tutti questi aspetti vengono approfonditi nel Capitolo 3.
+AmbraIA prende ispirazione dalle architetture sopraccitate e cerca di creare un NPC che possa interagire in un ambiente 3D di Unity, prendendo decisioni coerenti con il suo stato fisiologico e la sua percezione dell'ambiente. AmbraIA non è una struttura pensata per un videogioco o un ambiente specifico, grazie a un sistema automatico di matching tra \textit{GameObject} e interazioni/animazioni definite dallo sviluppatore. L'LLM viene utilizzato da AmbraIA per pianificare le azioni, mappare le azioni in C\# e generare riflessioni periodiche. Tutti questi aspetti vengono approfonditi nel Capitolo 3.
 
 \chapter{L'architettura di AmbraIA}
 \label{cap:architettura}
@@ -94,14 +94,13 @@ Per descrivere formalmente l'agente e il suo ambiente, si utilizza il modello PE
 		\item Varietà dei comportamenti nel tempo
 		\item Tasso di successo della compilazione del codice C\# generato
 		\item Tempo di risposta del server, cioè la latenza tra richiesta e piano generato
-		\item Adattabilità a scene nuove, cioè il sistema configura scene non preconfigurate
+		\item Adattabilità a scene nuove, cioè il sistema configura scene non preconfigurate correttamente 
 	\end{itemize}
 	
 	\item[Environment] Gli elementi che formano l'ambiente sono:
 	\begin{itemize}
 		\item Una scena 3D Unity con oggetti interagibili (cibo, mobili, oggetti decorativi)
 		\item Proprietà specifiche per ogni oggetto (nome, tag, azione disponibile, effetti fisiologici)
-		\item Lo stato fisiologico dell'NPC (fame e stanchezza), che evolve dinamicamente nel tempo
 	\end{itemize}
 	
 	\item[Actuators] Gli attuatori disponibili dall'agente sono:
@@ -127,13 +126,13 @@ L'ambiente in cui opera AmbraIA presenta le seguenti caratteristiche:
 \begin{description}
 	\item[Singolo agente] Il problema è modellato come un problema a singolo agente. Non sono presenti altri NPC o agenti concorrenti durante l'esecuzione, sebbene l'architettura sia predisposta per future estensioni multi-agente.
 	
-	\item[Parzialmente osservabile] L'agente percepisce solo gli oggetti entro un raggio di percezione configurabile, non l'intera scena. Inoltre non ha accesso diretto allo stato interno degli oggetti (ad esempio, non sa se un cibo è già stato consumato).
+	\item[Parzialmente osservabile] L'agente percepisce solo gli oggetti entro un raggio di percezione configurabile, non l'intera scena. Inoltre, non ha accesso diretto allo stato interno degli oggetti.
 	
 	\item[Semi-deterministico] Le interazioni con gli oggetti hanno effetti deterministici: mangiare una mela riduce sempre la fame di un valore fisso. Tuttavia, il processo decisionale basato su LLM introduce non-determinismo nella scelta delle azioni.
 	
 	\item[Sequenziale] Il processo decisionale non è suddiviso in episodi indipendenti, ma consiste in una sequenza continua di pianificazione, esecuzione e aggiornamento della memoria. Le decisioni hanno conseguenze a lungo termine perché influenzano i ricordi che guideranno le scelte future.
 	
-	\item[Statico] L'ambiente è statico durante l'esecuzione di un piano: gli oggetti non cambiano posizione o proprietà mentre l'NPC esegue le azioni. Lo stato fisiologico dell'NPC, invece, si modifica continuamente nel tempo.
+	\item[Statico] L'ambiente è statico durante l'esecuzione di un piano: gli oggetti non cambiano posizione o proprietà mentre l'NPC esegue le azioni.
 	
 	\item[Discreto] Lo spazio degli stati è discreto. Le azioni disponibili sono in numero finito e lo stato fisiologico è rappresentato da valori normalizzati tra 0 e 1.
 \end{description}
