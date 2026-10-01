@@ -5,41 +5,45 @@
 \contentsline {chapter}{\numberline {1}Introduzione}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Non-Playable Character: contesto e ruolo}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Obiettivi}{2}{section.1.2}%
-\contentsline {chapter}{\numberline {2}Dagli NPC tradizionali agli LLM: background e stato dell'arte}{3}{chapter.2}%
-\contentsline {section}{\numberline {2.1}NPC tradizionali: analisi e limiti}{3}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Alberi decisionali}{5}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {2.1.2}Macchine a stati finiti}{6}{subsection.2.1.2}%
-\contentsline {subsection}{\numberline {2.1.3}Limiti degli approcci tradizionali}{7}{subsection.2.1.3}%
-\contentsline {section}{\numberline {2.2}Gli LLM nei videogiochi: opportunità e sfide}{7}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}LLM come strumenti per lo sviluppo di videogiochi}{7}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}LLM per il controllo degli NPC}{8}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Sfide e limiti degli LLM}{8}{subsection.2.2.3}%
-\contentsline {chapter}{\numberline {3}L'architettura di AmbraIA}{10}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Specifica PEAS}{10}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Caratteristiche dell'ambiente}{11}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Analisi del problema}{12}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Il lato Unity di AmbraIA}{13}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}NPCController}{14}{subsection.3.4.1}%
-\contentsline {subsection}{\numberline {3.4.2}InteractableObject}{15}{subsection.3.4.2}%
-\contentsline {subsection}{\numberline {3.4.3}SceneAnalyzer}{15}{subsection.3.4.3}%
-\contentsline {subsection}{\numberline {3.4.4}RuntimeCompiler}{16}{subsection.3.4.4}%
-\contentsline {section}{\numberline {3.5}Il lato server di AmbraIA}{16}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Memory Stream}{18}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Retrieval}{20}{subsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.5.3}Planner}{21}{subsection.3.5.3}%
-\contentsline {subsection}{\numberline {3.5.4}Builder}{22}{subsection.3.5.4}%
-\contentsline {subsection}{\numberline {3.5.5}Inspector}{24}{subsection.3.5.5}%
-\contentsline {subsection}{\numberline {3.5.6}Reflector}{25}{subsection.3.5.6}%
-\contentsline {section}{\numberline {3.6}Configurazione scena}{25}{section.3.6}%
-\contentsline {chapter}{\numberline {4}Sperimentazione e Risultati}{27}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Setup sperimentale}{27}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Criteri di valutazione}{29}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Risultati}{30}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Coerenza delle azioni}{30}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Varietà comportamentale}{31}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}Tasso di successo della compilazione}{31}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {4.3.4}Adattabilità a scene nuove}{31}{subsection.4.3.4}%
-\contentsline {subsection}{\numberline {4.3.5}Latenza}{32}{subsection.4.3.5}%
-\contentsline {subsection}{\numberline {4.3.6}Considerazioni generali}{32}{subsection.4.3.6}%
-\contentsline {chapter}{\numberline {5}Conclusioni}{33}{chapter.5}%
-\contentsline {chapter}{Bibliografia}{34}{chapter.5}%
+\contentsline {section}{\numberline {1.3}Panoramica dei risultati}{2}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Struttura della tesi}{3}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Dagli NPC tradizionali agli LLM: background e stato dell'arte}{4}{chapter.2}%
+\contentsline {section}{\numberline {2.1}NPC tradizionali: analisi e limiti}{4}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Alberi decisionali}{6}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Macchine a stati finiti}{7}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Limiti degli approcci tradizionali}{8}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}Gli LLM nei videogiochi: opportunità e sfide}{8}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}LLM come strumenti per lo sviluppo di videogiochi}{8}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}LLM per il controllo degli NPC}{9}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Sfide e limiti degli LLM}{9}{subsection.2.2.3}%
+\contentsline {chapter}{\numberline {3}L'architettura di AmbraIA}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Specifica PEAS}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Caratteristiche dell'ambiente}{12}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Analisi del problema}{13}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Il lato Unity di AmbraIA}{14}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}NPCController}{15}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}InteractableObject}{16}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}SceneAnalyzer}{16}{subsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.4.4}RuntimeCompiler}{17}{subsection.3.4.4}%
+\contentsline {section}{\numberline {3.5}Il lato server di AmbraIA}{17}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Memory Stream}{19}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Retrieval}{21}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Planner}{22}{subsection.3.5.3}%
+\contentsline {subsection}{\numberline {3.5.4}Builder}{23}{subsection.3.5.4}%
+\contentsline {subsection}{\numberline {3.5.5}Inspector}{25}{subsection.3.5.5}%
+\contentsline {subsection}{\numberline {3.5.6}Reflector}{26}{subsection.3.5.6}%
+\contentsline {section}{\numberline {3.6}Configurazione scena}{26}{section.3.6}%
+\contentsline {chapter}{\numberline {4}Sperimentazione e Risultati}{28}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Setup sperimentale}{28}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Criteri di valutazione}{30}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Analisi dei risultati}{31}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Coerenza delle azioni}{31}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Varietà comportamentale}{32}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Tasso di successo della compilazione}{32}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Adattabilità a scene nuove}{32}{subsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.3.5}Latenza}{33}{subsection.4.3.5}%
+\contentsline {subsection}{\numberline {4.3.6}Considerazioni generali}{33}{subsection.4.3.6}%
+\contentsline {chapter}{\numberline {5}Conclusioni}{34}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Considerazioni finali}{34}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Sviluppi futuri}{34}{section.5.2}%
+\contentsline {chapter}{Bibliografia}{36}{section.5.2}%

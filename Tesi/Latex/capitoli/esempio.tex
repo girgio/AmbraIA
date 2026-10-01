@@ -403,6 +403,7 @@ Perché l'NPC venga riconosciuto dal sistema, il suo GameObject deve avere un co
 A questo punto la scena è pronta, ma nulla vieta all'utente di apportare ulteriori modifiche alle interazioni o alle associazioni qualora non fosse soddisfatto del risultato.
 
 \chapter{Sperimentazione e Risultati}
+\label{cap:risultati}
 
 \section{Setup sperimentale}
 
@@ -489,12 +490,12 @@ Per valutare i risultati dell'architettura bisogna considerare principalmente me
 		\hline
 		Latenza & Differenza di tempo tra la richiesta e la risposta. & Quantitativa \\
 		\hline
-		Adattabilità & Il sistema si adatta a nuove scene. & Qualitativa \\
+		Adattabilità & Il sistema si adatta correttamente a nuove scene. & Qualitativa \\
 		\hline
 	\end{tabularx}
 \end{table}
 
-\section{Risultati}
+\section{Analisi dei risultati}
 
 \subsection{Coerenza delle azioni}
 
@@ -510,7 +511,7 @@ Su circa trenta esecuzioni, la compilazione del codice C\# generato dal Builder 
 
 \subsection{Adattabilità a scene nuove}
 
-L'adattabilità del sistema è stata valutata osservando il comportamento del meccanismo di configurazione automatica. Nella scena di test erano presenti sei oggetti interagibili: tre di questi sono stati associati ai template tramite matching automatico per parole chiave, mentre i restanti tre, non corrispondendo a nessuna parola chiave definita, sono stati inviati al server e configurati tramite una chiamata all'LLM. L'intera configurazione è stata completata in circa 1440 ms. Questo dimostra che il sistema è in grado di associare template a oggetti non preconfigurati senza intervento manuale.
+L'adattabilità del sistema è stata valutata osservando il comportamento del meccanismo di configurazione automatica. Nella scena principale erano presenti sei oggetti interagibili: tre di questi sono stati associati ai template tramite matching automatico per parole chiave, mentre i restanti tre, non corrispondendo a nessuna parola chiave definita, sono stati inviati al server e configurati tramite una chiamata all'LLM. Il sistema di configurazione è stato testato anche su altre due scene, con esito positivo. Ogni configurazione è stata completata in circa 1440 ms in media. Questo dimostra che il sistema è in grado di associare template a oggetti non preconfigurati senza intervento manuale.
 
 \subsection{Latenza}
 
@@ -523,3 +524,4 @@ Un valore di latenza di questa entità non è compatibile con un utilizzo intera
 I risultati osservati sono coerenti con gli obiettivi stabiliti. Il Memory Stream, il Retrieval e il Reflector hanno prodotto un comportamento vario e coerente con la situazione, e il meccanismo di retry ha garantito la robustezza del flusso di generazione del codice.
 
 Nel complesso, i criteri di valutazione definiti nella Sezione \ref{sec:criteri} sono stati soddisfatti: l'NPC ha mostrato comportamenti coerenti con il proprio stato fisiologico, una buona varietà comportamentale, un tasso di successo della compilazione pari al 93\%, e la capacità di adattarsi a oggetti non preconfigurati. La latenza rimane il principale limite del prototipo, ma non compromette la validità dell'architettura e lascia spazio a ottimizzazioni future.
+

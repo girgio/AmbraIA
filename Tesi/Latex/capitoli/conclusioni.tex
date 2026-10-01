@@ -1,4 +1,22 @@
 \chapter{Conclusioni} 
 
-Le conclusioni qui...
+\section{Considerazioni finali}
+
+AmbraIA è un'architettura cognitiva per NPC, pensata per adattarsi a scene 3D su Unity senza richiedere configurazioni specifiche. I risultati ottenuti mostrano che gli obiettivi principali sono stati raggiunti: l'NPC genera azioni e riflessioni variabili, coerenti con i propri ricordi, e mantiene un comportamento adattabile e personalizzabile. La criticità principale resta la latenza, causata dalle chiamate agli LLM.
+
+Il valore di questo lavoro non sta nel singolo comportamento dell'NPC, ma nell'architettura che lo rende possibile. AmbraIA è un sistema modulare, riproducibile e indipendente da servizi cloud, che può essere usato come punto di partenza per prototipare NPC credibili in Unity. L'utente finale può modificare parametri fisiologici, template e interazioni senza dover toccare il codice dell'architettura.
+
+\section{Sviluppi futuri}
+
+Il sistema è già predisposto per implementare il modulo di strategia, cioè una struttura che permetta la gestione multi-agente. In questo scenario, gli LLM potrebbero essere utilizzati anche per permettere all'NPC di dialogare con l'utente o con altri NPC, arricchendo ulteriormente il comportamento.
+
+Un altro lavoro futuro riguarda l'ottimizzazione dei tempi di risposta e quindi la riduzione della latenza, possibile magari utilizzando LLM più efficienti o modelli più piccoli.
+
+Rendere l'ambiente da statico a dinamico potrebbe essere un ulteriore miglioramento, cioè fare in modo che gli oggetti con cui interagisce l'NPC cambino nel tempo. Nonostante non sia l'obiettivo principale di AmbraIA, la compatibilità con ambienti dinamici renderebbe il comportamento dell'NPC più realistico e adattabile a un numero maggiore di scene.
+
+Un'ulteriore direzione di sviluppo riguarda l'estensione di AmbraIA ad altri motori grafici oltre a Unity, come Unreal Engine o Godot. L'architettura del server rimarrebbe invariata, mentre cambierebbe il modulo client che si occupa della comunicazione con l'ambiente 3D e dell'esecuzione delle azioni. Questo permetterebbe di portare l'architettura su una gamma più ampia di progetti.
+
+Nel complesso, AmbraIA rappresenta un punto di partenza concreto per lo sviluppo di NPC credibili e adattivi, e le direzioni future delineate mostrano come l'architettura possa evolvere verso scenari sempre più complessi.
+
+Il codice sorgente è disponibile su \url{https://github.com/girgio/AmbraIA}.
 
