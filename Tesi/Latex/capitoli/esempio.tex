@@ -1,4 +1,5 @@
 \chapter{Dagli NPC tradizionali agli LLM: background e stato dell'arte}
+\label{cap:stato}
 
 \section{NPC tradizionali: analisi e limiti}
 
@@ -78,6 +79,7 @@ Nonostante le opportunità offerte, gli LLM presentano anche diverse criticità.
 AmbraIA prende ispirazione dalle architetture sopraccitate e cerca di creare un NPC che possa interagire in un ambiente 3D di Unity, prendendo decisioni coerenti con il suo stato fisiologico e la sua percezione dell'ambiente. AmbraIA non è una struttura pensata per un videogioco o un ambiente specifico, grazie a un sistema semi-automatico di matching tra GameObject e interazioni/animazioni definite dallo sviluppatore. L'LLM viene utilizzato da AmbraIA per pianificare le azioni, mappare le azioni in C\# e generare riflessioni periodiche. Tutti questi aspetti vengono approfonditi nel Capitolo 3.
 
 \chapter{L'architettura di AmbraIA}
+\label{cap:architettura}
 
 AmbraIA è un'architettura cognitiva per agenti autonomi in ambienti 3D, supportata da modelli linguistici generativi. Questa architettura è divisa in vari moduli, ognuno con il compito di preparare i dati per il modulo successivo; il risultato finale viene inviato a Unity, dove prende la forma di uno script C\# che permette all'agente di muoversi e interagire con la scena. Prima di descrivere in dettaglio ogni modulo, partiamo dalla definizione del problema dell'NPC che interagisce con l'ambiente e dalla descrizione dell'ambiente stesso.
 
