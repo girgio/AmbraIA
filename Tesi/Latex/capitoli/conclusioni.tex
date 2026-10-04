@@ -3,13 +3,11 @@
 
 \section{Considerazioni finali}
 
-AmbraIA è un'architettura cognitiva per NPC, pensata per adattarsi a scene 3D su Unity senza richiedere configurazioni specifiche. I risultati ottenuti mostrano che gli obiettivi principali sono stati raggiunti: l'NPC genera azioni e riflessioni variabili, coerenti con i propri ricordi, e mantiene un comportamento adattabile e personalizzabile. La criticità principale resta la latenza, causata dalle chiamate agli LLM.
-
-Il valore di questo lavoro non sta nel singolo comportamento dell'NPC, ma nell'architettura che lo rende possibile. AmbraIA è un sistema modulare, riproducibile e indipendente da servizi cloud, che può essere usato come punto di partenza per prototipare NPC credibili in Unity. L'utente finale può modificare parametri fisiologici, template e interazioni senza dover toccare il codice dell'architettura.
+AmbraIA si configura come un'architettura cognitiva flessibile e indipendente da servizi cloud, pensata per integrarsi in scene 3D su Unity senza richiedere configurazioni complesse. I risultati ottenuti confermano il raggiungimento degli obiettivi prefissati: l'NPC è in grado di generare riflessioni e azioni variabili e coerenti con il proprio stato interno, offrendo un comportamento dinamico e personalizzabile. Pur emergendo alcune criticità legate alla latenza causata principalmente dalle chiamate agli LLM, il valore principale del lavoro non risiede nel singolo comportamento generato, ma nella struttura modulare e riproducibile che lo rende possibile. L'architettura offre così un solido punto di partenza per la prototipazione di NPC credibili, consentendo all'utente di modularne parametri fisiologici e interazioni senza la necessità di intervenire sul codice sorgente.
 
 \section{Sviluppi futuri}
 
-Il sistema è già predisposto per implementare il modulo di strategia, cioè una struttura che permetta la gestione multi-agente. In questo scenario, gli LLM potrebbero essere utilizzati anche per permettere all'NPC di dialogare con l'utente o con altri NPC, arricchendo ulteriormente il comportamento.
+Il sistema è predisposto per implementare il modulo di strategia, cioè una struttura che permetta la gestione multi-agente. In questo scenario, gli LLM potrebbero essere utilizzati anche per permettere all'NPC di dialogare con l'utente o con altri NPC, arricchendo ulteriormente il comportamento.
 
 Un altro lavoro futuro riguarda l'ottimizzazione dei tempi di risposta e quindi la riduzione della latenza, possibile magari utilizzando LLM più efficienti o modelli più piccoli.
 

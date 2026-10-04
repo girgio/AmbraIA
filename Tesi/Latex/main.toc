@@ -16,16 +16,16 @@
 \contentsline {subsection}{\numberline {2.2.1}LLM come strumenti per lo sviluppo di videogiochi}{8}{subsection.2.2.1}%
 \contentsline {subsection}{\numberline {2.2.2}LLM per il controllo degli NPC}{9}{subsection.2.2.2}%
 \contentsline {subsection}{\numberline {2.2.3}Sfide e limiti degli LLM}{9}{subsection.2.2.3}%
-\contentsline {chapter}{\numberline {3}L'architettura di AmbraIA}{11}{chapter.3}%
+\contentsline {chapter}{\numberline {3}AmbraIA: dall'analisi del problema all'architettura"}{11}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Specifica PEAS}{11}{section.3.1}%
 \contentsline {section}{\numberline {3.2}Caratteristiche dell'ambiente}{12}{section.3.2}%
 \contentsline {section}{\numberline {3.3}Analisi del problema}{13}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Il lato Unity di AmbraIA}{14}{section.3.4}%
+\contentsline {section}{\numberline {3.4}Architettura del modulo Unity}{14}{section.3.4}%
 \contentsline {subsection}{\numberline {3.4.1}NPCController}{15}{subsection.3.4.1}%
 \contentsline {subsection}{\numberline {3.4.2}InteractableObject}{16}{subsection.3.4.2}%
 \contentsline {subsection}{\numberline {3.4.3}SceneAnalyzer}{16}{subsection.3.4.3}%
 \contentsline {subsection}{\numberline {3.4.4}RuntimeCompiler}{17}{subsection.3.4.4}%
-\contentsline {section}{\numberline {3.5}Il lato server di AmbraIA}{17}{section.3.5}%
+\contentsline {section}{\numberline {3.5}Architettura del modulo server}{17}{section.3.5}%
 \contentsline {subsection}{\numberline {3.5.1}Memory Stream}{19}{subsection.3.5.1}%
 \contentsline {subsection}{\numberline {3.5.2}Retrieval}{21}{subsection.3.5.2}%
 \contentsline {subsection}{\numberline {3.5.3}Planner}{22}{subsection.3.5.3}%

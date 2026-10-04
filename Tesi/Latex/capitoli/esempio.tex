@@ -78,7 +78,7 @@ Nonostante le opportunità offerte, gli LLM presentano anche diverse criticità.
 
 AmbraIA prende ispirazione dalle architetture sopraccitate e cerca di creare un NPC che possa interagire in un ambiente 3D di Unity, prendendo decisioni coerenti con il suo stato fisiologico e la sua percezione dell'ambiente. AmbraIA non è una struttura pensata per un videogioco o un ambiente specifico, grazie a un sistema automatico di matching tra \textit{GameObject} e interazioni/animazioni definite dallo sviluppatore. L'LLM viene utilizzato da AmbraIA per pianificare le azioni, mappare le azioni in C\# e generare riflessioni periodiche. Tutti questi aspetti vengono approfonditi nel Capitolo 3.
 
-\chapter{L'architettura di AmbraIA}
+\chapter{AmbraIA: dall'analisi del problema all'architettura"}
 \label{cap:architettura}
 
 AmbraIA è un'architettura cognitiva per agenti autonomi in ambienti 3D, supportata da modelli linguistici generativi. Questa architettura è divisa in vari moduli, ognuno con il compito di preparare i dati per il modulo successivo; il risultato finale viene inviato a Unity, dove prende la forma di uno script C\# che permette all'agente di muoversi e interagire con la scena. Prima di descrivere in dettaglio ogni modulo, partiamo dalla definizione del problema dell'NPC che interagisce con l'ambiente e dalla descrizione dell'ambiente stesso.
@@ -160,9 +160,9 @@ Il problema presenta le seguenti caratteristiche:
 
 Per questi motivi, il problema non può essere risolto tramite alberi decisionali predefiniti o macchine a stati finite tradizionali, ma risulta adatto all'uso di LLM combinati con un'architettura di memoria, retrieval e riflessione.
 
-\section{Il lato Unity di AmbraIA}
+\section{Architettura del modulo Unity}
 
-AmbraIA è suddivisa principalmente in due macro moduli: il lato Unity e il lato server. Il lato Unity ha il compito di raccogliere i dati di input dall'ambiente e di gestire i dati di output, cioè le azioni che l'NPC deve eseguire. È composto da quattro sotto-moduli principali, implementati come script C\#:
+AmbraIA è suddivisa principalmente in due macro moduli: il modulo Unity e il modulo server. Il modulo Unity ha il compito di raccogliere i dati di input dall'ambiente e di gestire i dati di output, cioè le azioni che l'NPC deve eseguire. È composto da quattro sotto-moduli principali, implementati come script C\#:
 
 \begin{itemize}
 	\item \texttt{NPCController}: permette all'NPC di muoversi e interagire con gli oggetti della scena.
@@ -190,7 +190,7 @@ L'\texttt{NPCController} contiene inoltre i dati dello stato interno dell'NPC, c
 
 \subsection{InteractableObject}
 
-\texttt{InteractableObject} è il modulo che rappresenta l'interazione e viene associato ai GameObject che possono essere interagiti. Contiene quattro informazioni principali:
+\texttt{InteractableObject} è il modulo che rappresenta l'interazione e viene associato ai \textit{GameObject} che possono essere interagiti. Contiene quattro informazioni principali:
 
 \begin{itemize}
 	\item il nome dell'interazione (ad esempio ``Usa'' o ``Mangia'');
@@ -199,7 +199,7 @@ L'\texttt{NPCController} contiene inoltre i dati dello stato interno dell'NPC, c
 	\item l'effetto, cioè il valore di modifica di fame e stanchezza dopo l'interazione.
 \end{itemize}
 
-Se a un GameObject non è associato un \texttt{InteractableObject}, questo non verrà considerato come oggetto interagibile. Il componente include inoltre un campo opzionale, \texttt{oggettoDaAttivare}, che permette di attivare un secondo GameObject al termine dell'interazione: questo consente di realizzare interazioni a più step, come nel caso del fornello che, una volta usato, fa apparire un piatto cotto.
+Se a un GameObject non è associato un \texttt{InteractableObject}, questo non verrà considerato come oggetto interagibile. Il componente include inoltre un campo opzionale, \texttt{oggettoDaAttivare}, che permette di attivare un secondo \textit{GameObject} al termine dell'interazione: questo consente di realizzare interazioni a più step, come nel caso del fornello che, una volta usato, fa apparire un piatto cotto.
 
 
 \subsection{SceneAnalyzer}
@@ -214,11 +214,11 @@ Quando un'azione viene completata, lo \texttt{SceneAnalyzer} invia una notifica 
 
 \texttt{RuntimeCompiler} ha il compito di compilare il piano d'azione, scritto in codice sorgente C\# e generato dal server, per poi attaccarlo all'NPC. Unity normalmente compila tutto il codice a tempo di build, ma in questo caso il codice non esiste finché il server non lo genera, quindi è necessario compilarlo durante l'esecuzione del gioco. Per farlo, il componente utilizza Roslyn, il compilatore C\# ufficiale di Microsoft.
 
-Il processo avviene interamente in memoria: se la compilazione ha successo, la classe generata viene attaccata al GameObject dell'NPC, sostituendo quella del piano precedente. Se invece la compilazione fallisce, \texttt{RuntimeCompiler} restituisce una stringa con gli errori riscontrati, che \texttt{SceneAnalyzer} invierà al server per richiedere una correzione.
+Il processo avviene interamente in memoria: se la compilazione ha successo, la classe generata viene attaccata al \textit{GameObject} dell'NPC, sostituendo quella del piano precedente. Se invece la compilazione fallisce, \texttt{RuntimeCompiler} restituisce una stringa con gli errori riscontrati, che \texttt{SceneAnalyzer} invierà al server per richiedere una correzione.
 
-\section{Il lato server di AmbraIA}
+\section{Architettura del modulo server}
 
-Il lato server ha il compito di elaborare i dati ricevuti da Unity e di generare un piano d'azione sotto forma di file C\#, che viene poi rimandato indietro. È stato implementato interamente in Python. Per orchestrare i diversi sotto-moduli del server ho scelto di utilizzare LangGraph, un framework open source sviluppato da LangChain. LangGraph permette di costruire workflow complessi con agenti di AI generativa, gestendo in modo chiaro il flusso di dati tra un modulo e l'altro. Il server è composto da sei moduli principali:
+Il server ha il compito di elaborare i dati ricevuti da Unity e di generare un piano d'azione sotto forma di file C\#, che viene poi rimandato a Unity. È stato implementato interamente in Python. Per orchestrare i diversi sotto-moduli del server ho scelto di utilizzare LangGraph, un framework open source sviluppato da LangChain. LangGraph permette di costruire workflow complessi con agenti di AI generativa, gestendo in modo chiaro il flusso di dati tra un modulo e l'altro. Il server è composto da sei moduli principali:
 
 \begin{itemize}
 	\item \texttt{Memory Stream}: memoria persistente che registra tutte le esperienze dell'NPC.
@@ -239,18 +239,18 @@ La Figura \ref{fig:lato_server} mostra una panoramica del lato server.
 
 \subsection{Memory Stream}
 
-Il Memory Stream rappresenta la memoria permanente dell'architettura. Consiste in un file JSON in cui sono raccolti tutti i ``ricordi'' dell'NPC, cioè le sue azioni passate. Questo serve a simulare i ricordi umani e aiuta a evitare comportamenti ripetitivi, incoerenti, o che in passato hanno portato a effetti negativi. Ogni ricordo è composto da:
+Il \texttt{MemoryStream} rappresenta la memoria permanente dell'architettura. Consiste in un file JSON in cui sono raccolti tutti i ``ricordi'' dell'NPC, cioè le sue azioni passate. Questo serve a simulare i ricordi umani e aiuta a evitare comportamenti ripetitivi, incoerenti, o che in passato hanno portato a effetti negativi. Ogni ricordo è composto da:
 
 \begin{itemize}
 	\item \texttt{id}: identificativo alfanumerico del ricordo;
 	\item \texttt{content}: descrizione testuale del ricordo;
 	\item \texttt{timestamp}: momento in cui è avvenuto il ricordo;
-	\item \texttt{importance}: numero intero da 1 a 10 che indica l'importanza del ricordo. Non tutte le esperienze hanno lo stesso valore: mangiare una mela quando si ha fame è più significativo che mangiarla quando si è già sazi. Per questo il punteggio viene assegnato dall'LLM al momento della creazione del ricordo, valutando l'impatto sullo stato fisico, la novità dell'evento e l'utilità per le decisioni future. Questo valore influenza il Retrieval, dando più peso ai ricordi ritenuti più importanti;
+	\item \texttt{importance}: numero intero da 1 a 10 che indica l'importanza del ricordo. Non tutte le esperienze hanno lo stesso valore: mangiare una mela quando si ha fame è più significativo che mangiarla quando si è già sazi. Per questo il punteggio viene assegnato dall'LLM al momento della creazione del ricordo, valutando l'impatto sullo stato fisico, la novità dell'evento e l'utilità per le decisioni future. Questo valore influenza il \texttt{Retrieval}, dando più peso ai ricordi ritenuti più importanti;
 	\item \texttt{type}: tipo del ricordo, che può essere \texttt{action} o \texttt{reflection};
-	\item \texttt{embedding}: vettore di 768 numeri che rappresenta il significato del testo. Viene generato tramite \texttt{nomic-embed-text}, un modello eseguito localmente che trasforma una frase in una rappresentazione numerica. Due frasi con significato simile avranno vettori vicini nello spazio, anche se non condividono le stesse parole: ad esempio ``Ho mangiato una mela'' e ``Ho consumato del cibo'' producono embedding molto simili. Questo permette al Retrieval di confrontare i ricordi con la situazione attuale in modo semantico, senza dover cercare parole chiave.
+	\item \texttt{embedding}: vettore di 768 numeri che rappresenta il significato del testo. Viene generato tramite \texttt{nomic-embed-text}, un modello eseguito localmente che trasforma una frase in una rappresentazione numerica. Due frasi con significato simile avranno vettori vicini nello spazio, anche se non condividono le stesse parole: ad esempio ``Ho mangiato una mela'' e ``Ho consumato del cibo'' producono embedding molto simili. Questo permette al  \texttt{Retrieval} di confrontare i ricordi con la situazione attuale in modo semantico, senza dover cercare parole chiave.
 \end{itemize}
 
-La Lista \ref{lst:ricordo} mostra un esempio di ricordo salvato nel Memory Stream.
+La Lista \ref{lst:ricordo} mostra un esempio di ricordo salvato nel \texttt{MemoryStream}.
 
 \begin{lstlisting}[style=jsonstyle, caption={Esempio di ricordo nel Memory Stream.}, label={lst:ricordo}]
 	{
@@ -263,12 +263,11 @@ La Lista \ref{lst:ricordo} mostra un esempio di ricordo salvato nel Memory Strea
 	}
 \end{lstlisting}
 
-Retriaval
 \subsection{Retrieval}
 
-Il Retrieval è il modulo che si occupa di recuperare dal Memory Stream i ricordi più utili per la situazione attuale. L'LLM, da solo, non può ricevere l'intera memoria dell'NPC: dopo diverse ore di gioco il numero di ricordi accumulati diventa troppo elevato per essere inserito in un singolo prompt. È quindi necessario un meccanismo di selezione che scelga solo i ricordi più rilevanti; d'altronde anche la mente umana estrae specifici ricordi in specifiche situazioni.
+Il \texttt{Retrieval} è il modulo che si occupa di recuperare dal \texttt{MemoryStream} i ricordi più utili per la situazione attuale. L'LLM, da solo, non può ricevere l'intera memoria dell'NPC: dopo diverse ore di gioco il numero di ricordi accumulati diventa troppo elevato per essere inserito in un singolo prompt. È quindi necessario un meccanismo di selezione che scelga solo i ricordi più rilevanti; d'altronde anche la mente umana estrae specifici ricordi in specifiche situazioni.
 
-Il Retrieval estrae i primi dieci ricordi in base a un punteggio calcolato combinando tre fattori:
+Il \texttt{Retrieval} estrae i primi dieci ricordi in base a un punteggio calcolato combinando tre fattori:
 
 \begin{itemize}
 	\item \textbf{Recency}: quanto è recente il ricordo. Un'esperienza appena vissuta è spesso più utile e adatta al contesto attuale di una di diverse ore fa. Il decadimento è esponenziale, così i ricordi invecchiano rapidamente all'inizio e più lentamente col passare del tempo;
@@ -303,11 +302,11 @@ I dieci ricordi con il punteggio più alto vengono passati al Planner come conte
 
 \subsection{Planner}
 
-Il Planner è il primo nodo del grafo a chiamare l'LLM. Il suo compito è generare un piano d'azione in linguaggio naturale, che verrà poi utilizzato come input dal nodo successivo, il Builder. Riceve come input i ricordi estratti dal Retrieval, tutti gli oggetti interagibili presenti nella scena, lo stato fisiologico corrente dell'NPC, le azioni recenti e le riflessioni accumulate.
+Il \texttt{Planner} è il primo nodo del grafo a chiamare l'LLM. Il suo compito è generare un piano d'azione in linguaggio naturale, che verrà poi utilizzato come input dal nodo successivo, il \texttt{Builder}. Riceve come input i ricordi estratti dal \texttt{Retrieval}, tutti gli oggetti interagibili presenti nella scena, lo stato fisiologico corrente dell'NPC, le azioni recenti e le riflessioni accumulate.
 
-Il formato della risposta è un piano d'azione composto da un obiettivo principale e da un massimo di tre sotto-obiettivi, ciascuno con una priorità (alta, media o bassa). Ogni sotto-obiettivo descrive l'azione da compiere e l'oggetto su cui agire, in modo che il Builder comprenda in che ordine devono essere eseguite le azioni.
+Il formato della risposta è un piano d'azione composto da un obiettivo principale e da un massimo di tre sotto-obiettivi, ciascuno con una priorità (alta, media o bassa). Ogni sotto-obiettivo descrive l'azione da compiere e l'oggetto su cui agire, in modo che il \texttt{Builder} comprenda in che ordine devono essere eseguite le azioni.
 
-La Lista \ref{lst:piano} mostra un esempio di piano generato dal Planner.
+La Lista \ref{lst:piano} mostra un esempio di piano generato dal \texttt{Planner}.
 
 \begin{lstlisting}[style=jsonstyle, caption={Esempio di piano generato dal Planner.}, label={lst:piano}]
 	GOAL: Mantenermi in salute
@@ -321,18 +320,18 @@ La Lista \ref{lst:piano} mostra un esempio di piano generato dal Planner.
 	- Azione: Siediti su Sedia
 \end{lstlisting}
 
-Il Planner tiene conto di alcune regole fondamentali: se la fame o la stanchezza superano la soglia critica di 0.7, il bisogno corrispondente diventa la priorità assoluta; le azioni già eseguite di recente non tendono ad essere ripetute; se le riflessioni suggeriscono di variare il comportamento, il piano deve riflettere questo cambiamento; se non ci sono bisogni urgenti, l'NPC deve esplorare nuovi oggetti o attività.
+Il \texttt{Planner} tiene conto di alcune regole fondamentali: se la fame o la stanchezza superano la soglia critica di 0.7, il bisogno corrispondente diventa la priorità assoluta; le azioni già eseguite di recente non tendono ad essere ripetute; se le riflessioni suggeriscono di variare il comportamento, il piano deve riflettere questo cambiamento; se non ci sono bisogni urgenti, l'NPC deve esplorare nuovi oggetti o attività.
 
 \subsection{Builder}
 
-Il Builder converte il piano d'azione in linguaggio naturale, generato dal Planner, in codice C\# eseguibile su Unity. Come il Planner, riceve in input la lista degli oggetti interagibili con le rispettive azioni valide e le distanze dall'NPC. In base alle azioni decise dal Planner, il Builder mappa ogni interazione con un massimo di due istruzioni:
+Il \texttt{Builder} converte il piano d'azione in linguaggio naturale, generato dal \texttt{Planner}, in codice C\# eseguibile su Unity. Come il \texttt{Planner}, riceve in input la lista degli oggetti interagibili con le rispettive azioni valide e le distanze dall'NPC. In base alle azioni decise dal \texttt{Planner}, il \texttt{Builder} mappa ogni interazione con un massimo di due istruzioni:
 
 \begin{itemize}
 	\item \texttt{MoveToTargetAndWait}: muove l'NPC verso l'oggetto target, se questo si trova a una distanza superiore a un'unità;
 	\item \texttt{InteractWithAndWait}: obbligatoria per far avvenire l'interazione, avvia l'animazione e applica l'effetto fisiologico corrispondente.
 \end{itemize}
 
-La Lista \ref{lst:codice_generato} mostra un esempio di codice C\# generato dal Builder.
+La Lista \ref{lst:codice_generato} mostra un esempio di codice C\# generato dal \texttt{Builder}.
 
 \begin{lstlisting}[style=jsonstyle, caption={Esempio di codice C\# generato dal Builder.}, label={lst:codice_generato}]
 	using UnityEngine;
@@ -364,13 +363,13 @@ La Lista \ref{lst:codice_generato} mostra un esempio di codice C\# generato dal 
 	}
 \end{lstlisting}
 
-Il Builder opera in modalità deterministica, con temperatura impostata a zero, per ridurre al minimo la variabilità dell'output. Il codice generato è vincolato a una struttura fissa: la classe deve chiamarsi \texttt{AiAction}, deve ereditare da \texttt{MonoBehaviour} e deve usare esclusivamente i due metodi esposti dall'\texttt{NPCController}. Al termine dell'esecuzione, la classe si autodistrugge tramite \texttt{Destroy(this)}, così che il componente non si accumuli sull'NPC tra un piano e il successivo.
+Il \texttt{Builder} opera in modalità deterministica, con temperatura impostata a zero, per ridurre al minimo la variabilità dell'output. Il codice generato è vincolato a una struttura fissa: la classe deve chiamarsi \texttt{AiAction}, deve ereditare da \texttt{MonoBehaviour} e deve usare esclusivamente i due metodi esposti dall'\texttt{NPCController}. Al termine dell'esecuzione, la classe si autodistrugge tramite \texttt{Destroy(this)}, così che il componente non si accumuli sull'NPC tra un piano e il successivo.
 
 \subsection{Inspector}
 
-L'Inspector è l'ultimo nodo del grafo e ha il compito di controllare che il codice generato dal Builder non contenga errori gravi. Se il controllo fallisce, il codice viene rimandato al Builder per un ulteriore tentativo, fino a un massimo di tre.
+L'\texttt{Inspector} è l'ultimo nodo del grafo e ha il compito di controllare che il codice generato dal \texttt{Builder} non contenga errori gravi. Se il controllo fallisce, il codice viene rimandato al \texttt{Builder} per un ulteriore tentativo, fino a un massimo di tre.
 
-L'Inspector verifica tre categorie di problemi:
+L'\texttt{Inspector} verifica tre categorie di problemi:
 
 \begin{itemize}
 	\item \textbf{Placeholder}: controlla che il codice non contenga pseudo-codice, commenti al posto di istruzioni reali (es. \texttt{if (/* condizione */)}), oppure testi come ``TODO'' o ``da implementare'';
@@ -378,15 +377,15 @@ L'Inspector verifica tre categorie di problemi:
 	\item \textbf{Nomi dei componenti}: controlla che il nome del controller utilizzato nel codice sia corretto (ad esempio, che sia \texttt{NPCController} e non una variante inventata dall'LLM).
 \end{itemize}
 
-Può capitare che il codice contenga altri tipi di errore che l'Inspector non è in grado di rilevare, come errori di sintassi o di tipo. In questo caso, quando Unity tenta di compilare il codice, genera un errore e lo rispedisce al server. Il grafo riparte direttamente dal Builder, saltando Retrieval e Planner, e il Builder riceve l'errore nel prompt per correggere il codice. In questo modo, l'Inspector ha il compito principale di individuare gli errori immediati e di velocizzare il flusso di lavoro, evitando di far arrivare a Unity codice che sarebbe sicuramente scartato.
+Può capitare che il codice contenga altri tipi di errore che l'\texttt{Inspector} non è in grado di rilevare, come errori di sintassi o di tipo. In questo caso, quando Unity tenta di compilare il codice, genera un errore e lo rispedisce al server. Il grafo riparte direttamente dal \texttt{Builder}, saltando \texttt{Retrieval} e \texttt{Planner}, ricevendo l'errore nel prompt per correggere il codice. In questo modo, l'\texttt{Inspector} ha il compito principale di individuare gli errori immediati e di velocizzare il flusso di lavoro, evitando di far arrivare a Unity codice che sarebbe sicuramente scartato.
 
 \subsection{Reflector}
 
-Il Reflector non è un nodo del grafo, ma un modulo indipendente che viene eseguito ogni cinque azioni completate. Come input riceve i ricordi più recenti del Memory Stream, in particolare le ultime venti azioni e osservazioni. Il Reflector chiede all'LLM di generare una o più riflessioni di alto livello sui comportamenti recenti dell'NPC, identificando pattern, abitudini ricorrenti o comportamenti poco coerenti.
+Il \texttt{Reflector} non è un nodo del grafo, ma un modulo indipendente che viene eseguito ogni cinque azioni completate. Come input riceve i ricordi più recenti del \texttt{Memory Stream}, in particolare le ultime venti azioni e osservazioni. Il \texttt{Reflector} chiede all'LLM di generare una o più riflessioni di alto livello sui comportamenti recenti dell'NPC, identificando pattern, abitudini ricorrenti o comportamenti poco coerenti.
 
-Le riflessioni generate vengono salvate nel Memory Stream come ricordi di tipo \texttt{reflection}, con un punteggio di importanza fissato a 9. In questo modo, grazie alla formula del Retrieval, tenderanno a essere recuperate spesso e a influenzare le pianificazioni successive; di conseguenza il Planner terrà conto di queste osservazioni.
+Le riflessioni generate vengono salvate nel \texttt{Memory Stream} come ricordi di tipo \texttt{reflection}, con un punteggio di importanza fissato a 9. In questo modo, grazie alla formula del \texttt{Retrieval}, tenderanno a essere recuperate spesso e a influenzare le pianificazioni successive; di conseguenza il \texttt{Planner} terrà conto di queste osservazioni.
 
-La Lista \ref{lst:riflessione} mostra un esempio di riflessione generata dal Reflector.
+La Lista \ref{lst:riflessione} mostra un esempio di riflessione generata dal \texttt{Reflector}.
 
 \begin{lstlisting}[style=jsonstyle, caption={Esempio di riflessione generata dal Reflector.}, label={lst:riflessione}]
 	L'NPC tende a mangiare sempre la stessa mela.
@@ -395,11 +394,11 @@ La Lista \ref{lst:riflessione} mostra un esempio di riflessione generata dal Ref
 
 \section{Configurazione scena}
 
-AmbraIA prevede una configurazione della scena semi-automatica. L'utente deve inserire la proprietà \textit{static} sul pavimento e su tutti i GameObject che sono considerati ostacoli per il movimento. Deve poi creare dei Template per gli oggetti interagibili, creabili dal menù a tendina degli asset, in cui specifica nome, animazione ed effetto, più due campi opzionali dove può aggiungere delle parole chiave per il nome o per il tag degli oggetti. Ad esempio, se l'azione è ``siediti'' può inserire parole chiave come ``sedia, divano, letto, poltrona''.
+AmbraIA prevede una configurazione della scena automatica. L'utente deve inserire la proprietà \textit{static} sul pavimento e su tutti i \textit{GameObject} che sono considerati ostacoli per il movimento. Deve poi creare dei Template per gli oggetti interagibili, creabili dal menù a tendina degli asset, in cui specifica nome, animazione ed effetto, più due campi opzionali dove può aggiungere delle parole chiave per il nome o per il tag degli oggetti. Ad esempio, se l'azione è ``siediti'' può inserire parole chiave come ``sedia, divano, letto, poltrona''.
 
 A questo punto, dalla barra in alto, sotto la voce ``NPC'' può avviare l'analisi che mappa tutti gli oggetti con un tag come interagibili e associa a ciascuno un \texttt{InteractableObject} in base al template. L'associazione può avvenire in due modi: per corrispondenza di parole chiave, oppure, in mancanza di corrispondenza, tramite una chiamata all'LLM che, ricevendo la lista di oggetti e i template disponibili, deciderà a quale template associare ogni oggetto.
 
-Perché l'NPC venga riconosciuto dal sistema, il suo GameObject deve avere un componente \texttt{NPCController} attaccato, oltre a \texttt{SceneAnalyzer}, \texttt{RuntimeCompiler}, \texttt{NavMeshAgent} e \texttt{Animator}. Il tool cerca un \texttt{NPCController} nella scena per verificare se l'NPC è già presente e, se non lo trova, lo istanzia automaticamente dalla posizione $(0,0,0)$.
+Perché l'NPC venga riconosciuto dal sistema, il suo \textit{GameObject} deve avere un componente \texttt{NPCController} attaccato, oltre a \texttt{SceneAnalyzer}, \texttt{RuntimeCompiler}, \texttt{NavMeshAgent} e \texttt{Animator}. Il tool cerca un \texttt{NPCController} nella scena per verificare se l'NPC è già presente e, se non lo trova, lo istanzia automaticamente dalla posizione $(0,0,0)$.
 
 A questo punto la scena è pronta, ma nulla vieta all'utente di apportare ulteriori modifiche alle interazioni o alle associazioni qualora non fosse soddisfatto del risultato.
 
@@ -420,7 +419,7 @@ L'architettura è stata testata principalmente su una singola scena che funge da
 		\hline
 		\multicolumn{2}{|c|}{\textbf{Ambiente}} \\
 		\hline
-		Tipo di scena & Soggiorno/camera da letto \\
+		Tipo di scena & Soggiorno \\
 		Oggetti interagibili & 6 (PC, sedia, divano, console, bicchiere di vino, ciotola di cibo) \\
 		\hline
 		\multicolumn{2}{|c|}{\textbf{Template}} \\
@@ -455,7 +454,6 @@ L'architettura è stata testata principalmente su una singola scena che funge da
 		\multicolumn{2}{|c|}{\textbf{Configurazione server}} \\
 		\hline
 		Intervallo Reflector & ogni 5 azioni \\
-		Max tentativi Builder & 3 \\
 		\hline
 	\end{tabularx}
 \end{table}
@@ -487,7 +485,7 @@ Per valutare i risultati dell'architettura bisogna considerare principalmente me
 		\hline
 		Varietà comportamentale & L'NPC ha una buona varietà comportamentale se non tende a ripetere le stesse azioni in presenza di oggetti diversi ma con effetto simile. & Qualitativa \\
 		\hline
-		Tasso di successo compilazione & Numero di compilazioni riuscite diviso il numero di compilazioni totali. & Quantitativa \\
+		Tasso di successo compilazione & Rapporto tra il numero di compilazioni riuscite e il numero di compilazioni totali. & Quantitativa \\
 		\hline
 		Latenza & Differenza di tempo tra la richiesta e la risposta. & Quantitativa \\
 		\hline
@@ -500,11 +498,11 @@ Per valutare i risultati dell'architettura bisogna considerare principalmente me
 
 \subsection{Coerenza delle azioni}
 
-L'NPC ha sempre dato priorità ai propri bisogni critici. Quando la fame o la stanchezza superavano la soglia critica, il Planner assegnava loro priorità alta nel piano, privilegiando le azioni con effetti maggiori sul bisogno in questione. Questo comportamento ha ridotto la varietà delle azioni nei momenti di criticità, ma ha confermato il funzionamento della memoria: i ricordi recuperati dal Retrieval hanno permesso all'NPC di scegliere le interazioni che in passato avevano prodotto i risultati migliori.
+L'NPC ha sempre dato priorità ai propri bisogni critici. Quando la fame o la stanchezza superavano la soglia critica, il Planner assegnava loro priorità alta nel piano, privilegiando le azioni con effetti maggiori sul bisogno in questione. Questo comportamento ha ridotto la varietà delle azioni nei momenti di criticità, ma ha confermato il funzionamento della memoria: i ricordi recuperati dal \texttt{Retrieval} hanno permesso all'NPC di scegliere le interazioni che in passato avevano prodotto i risultati migliori.
 
 \subsection{Varietà comportamentale}
 
-Il comportamento dell'NPC è rimasto vario nel complesso. Quando lo stato fisiologico non era critico, l'NPC ha esplorato nuove interazioni, provando oggetti diversi presenti nella scena. Si è comunque osservata una tendenza a ripetere alcune azioni, in particolare quelle che migliorano lo stato fisiologico: questo comportamento è coerente con il funzionamento del sistema, perché il Retrieval tende a recuperare ricordi legati a esperienze positive, portando il Planner a preferire azioni già note come efficaci.
+Il comportamento dell'NPC è rimasto vario nel complesso. Quando lo stato fisiologico non era critico, l'NPC ha esplorato nuove interazioni, provando oggetti diversi presenti nella scena. Si è comunque osservata una tendenza a ripetere alcune azioni, in particolare quelle che migliorano lo stato fisiologico: questo comportamento è coerente con il funzionamento del sistema, perché il \texttt{Retrieval} tende a recuperare ricordi legati a esperienze positive, portando il \texttt{Planner} a preferire azioni già note come efficaci.
 
 \subsection{Tasso di successo della compilazione}
 
@@ -516,13 +514,13 @@ L'adattabilità del sistema è stata valutata osservando il comportamento del me
 
 \subsection{Latenza}
 
-La latenza misura il tempo che intercorre tra l'invio della richiesta da Unity e la ricezione del piano generato dal server. Nei test condotti, la latenza media per la generazione di un piano si è attestata intorno ai 57 secondi. Questo valore è dominato dalle due chiamate all'LLM, una per il Planner e una per il Builder, che insieme occupano la maggior parte del tempo totale di risposta.
+La latenza misura il tempo che intercorre tra l'invio della richiesta da Unity e la ricezione del piano generato dal server. Nei test condotti, la latenza media per la generazione di un piano si è attestata intorno ai 57 secondi. Questo valore è dominato dalle due chiamate all'LLM, una per il \texttt{Planner} e una per il\texttt{Builder}, che insieme occupano la maggior parte del tempo totale di risposta.
 
 Un valore di latenza di questa entità non è compatibile con un utilizzo interattivo in tempo reale, ma risulta accettabile per una dimostrazione prototipale: la generazione del piano avviene in background mentre l'NPC completa il piano precedente, quindi il gioco non si blocca in attesa della risposta. Il valore dipende in larga misura dal modello linguistico utilizzato e dall'hardware su cui viene eseguito; modelli più piccoli o GPU dedicate potrebbero ridurre sensibilmente il tempo di risposta.
 
 \subsection{Considerazioni generali}
 
-I risultati osservati sono coerenti con gli obiettivi stabiliti. Il Memory Stream, il Retrieval e il Reflector hanno prodotto un comportamento vario e coerente con la situazione, e il meccanismo di retry ha garantito la robustezza del flusso di generazione del codice.
+I risultati osservati sono coerenti con gli obiettivi stabiliti. Il \texttt{Memory Stream}, il \texttt{Retrieval} e il \texttt{Reflector} hanno prodotto un comportamento vario e coerente con la situazione, e il meccanismo di retry ha garantito la robustezza del flusso di generazione del codice.
 
 Nel complesso, i criteri di valutazione definiti nella Sezione \ref{sec:criteri} sono stati soddisfatti: l'NPC ha mostrato comportamenti coerenti con il proprio stato fisiologico, una buona varietà comportamentale, un tasso di successo della compilazione pari al 93\%, e la capacità di adattarsi a oggetti non preconfigurati. La latenza rimane il principale limite del prototipo, ma non compromette la validità dell'architettura e lascia spazio a ottimizzazioni future.
 
