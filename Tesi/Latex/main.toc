@@ -43,7 +43,7 @@
 \contentsline {subsection}{\numberline {4.3.4}Adattabilità a scene nuove}{32}{subsection.4.3.4}%
 \contentsline {subsection}{\numberline {4.3.5}Latenza}{33}{subsection.4.3.5}%
 \contentsline {subsection}{\numberline {4.3.6}Considerazioni generali}{33}{subsection.4.3.6}%
-\contentsline {chapter}{\numberline {5}Conclusioni}{34}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Considerazioni finali}{34}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Sviluppi futuri}{34}{section.5.2}%
-\contentsline {chapter}{Bibliografia}{36}{section.5.2}%
+\contentsline {chapter}{\numberline {5}Conclusioni}{35}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Considerazioni finali}{35}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Sviluppi futuri}{35}{section.5.2}%
+\contentsline {chapter}{Bibliografia}{37}{section.5.2}%

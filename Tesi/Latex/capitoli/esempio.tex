@@ -5,7 +5,7 @@
 
 L'IA nei videogiochi è nata praticamente in simbiosi con i videogiochi stessi. Basti pensare a \textit{Pong}\cite{pong}, in cui l'avversario deve cercare di colpire la pallina evitando di subire punto. Un altro esempio importante è \textit{Pac-Man}\cite{pacman} del 1980, dove i quattro fantasmi hanno ciascuno un algoritmo differente per raggiungere il protagonista: Blinky, il fantasma rosso, imposta il suo obiettivo di movimento in base alla posizione attuale di Pac-Man, mentre Inky, il fantasma blu, si basa sulla posizione del fantasma rosso e di Pac-Man per accerchiarlo.
 Inizialmente gli NPC servivano principalmente per dare una sfida al giocatore. Oggi troviamo sistemi più complessi, alcuni dei quali simulano anche il comportamento umano, come \textit{The Sims}\cite{thesims}, che simula la vita quotidiana delle persone. Come osserva Millington: ``Now we have a massive diversity of AI in games. Many genres are still using the simple AI of 1979 because that's all they need'' \cite{millington2019artificial}. Nonostante l'IA nei videogiochi, e più in generale nel mondo dell'informatica, si sia evoluta molto, vari videogiochi moderni utilizzano ancora strutture vecchie di decenni. Il motivo risiede nella diversità dei generi videoludici e nello scopo che ogni videogioco si prefigge, come già introdotto nel Capitolo 1.
-Normalmente un'IA per un NPC viene strutturata in tre moduli principali: movimento, decision making e strategia, come mostrato in Figura \ref{fig:moduli_ia}. Questa è una struttura proposta da Ian Millington per spiegare meglio il concetto di IA nei videogiochi \cite{millington2019artificial}. I primi due moduli agiscono sul singolo agente, mentre la strategia agisce anche sulle azioni degli altri agenti.
+Normalmente un'IA per un NPC viene strutturata in tre moduli principali: Movimento, Decision Making e Strategia, come mostrato in Figura \ref{fig:moduli_ia}. Questa è una struttura proposta da Ian Millington per spiegare meglio il concetto di IA nei videogiochi \cite{millington2019artificial}. I primi due moduli agiscono sul singolo agente, mentre la strategia agisce anche sulle azioni degli altri agenti.
 
 \begin{figure}[h]
 	\centering
@@ -16,12 +16,12 @@ Normalmente un'IA per un NPC viene strutturata in tre moduli principali: movimen
 
 Il Movimento è definito come il modulo che calcola un certo tipo di percorso e coordina il movimento dell'NPC. Il Decision Making permette all'NPC di decidere quali azioni compiere tra quelle disponibili. La Strategia serve a coordinare i due moduli sopracitati per farli lavorare insieme ad altri agenti.
 Non tutti i moduli sono necessari: \textit{Super Mario Galaxy}\cite{mariogalaxy} ha bisogno solo del modulo di movimento, dato che i nemici devono semplicemente inseguire il giocatore. Altri giochi d'azione più complicati come \textit{Dark Souls}\cite{darksouls} richiedono decisioni più complesse — attaccare, parare, muoversi o curarsi — ma non tengono conto delle azioni degli altri nemici, rendendo superflua la Strategia. Tutto ciò rientra nelle scelte di design: ogni videogioco vuole trasmettere emozioni diverse e offrire un diverso grado di sfida.
-AmbraIA opera soprattutto sul campo del Decision Making, cercando di non coprire un genere preciso ma di creare un'IA che possa rendere gli NPC credibili in scene 3D differenti. Il Decision Making viene affrontato principalmente tramite due strutture: gli alberi decisionali e le macchine a stati finiti.
+AmbraIA opera soprattutto sul campo del Decision Making, cercando di non coprire un genere preciso ma di creare un'IA che possa rendere gli NPC credibili in scene 3D differenti. Tradizionalmente, il Decision Making viene affrontato principalmente tramite due strutture: gli alberi decisionali e le macchine a stati finiti.
 
 \subsection{Alberi decisionali}
 
-Non entrando troppo nei particolari, gli alberi decisionali sono strutture dati che vengono percorse ogni volta che deve essere presa una decisione. Sono formati da un insieme di nodi e da archi, cioè collegamenti direzionati tra due nodi che rappresentano le decisioni. Gli alberi sono caratterizzati dall'assenza di cicli. Le decisioni finali sono rappresentate dai nodi foglia, cioè nodi senza archi uscenti.
-Non appena c'è bisogno di prendere una decisione, l'albero viene percorso a partire dal suo nodo iniziale, detto radice. Viene percorso un arco piuttosto che un altro a seconda degli input che l'agente riceve, come la percezione del mondo esterno o il suo stato interno, ad esempio fame o stanchezza. Una volta arrivati al nodo foglia, la decisione è stata presa e si esegue l'azione designata, come mostrato in Figura \ref{fig:alberodecisionale}.
+Gli alberi decisionali sono strutture dati che vengono percorse ogni volta che deve essere presa una decisione. Sono formati da un insieme di nodi e da archi, cioè collegamenti direzionati tra due nodi che rappresentano le decisioni. Gli alberi sono caratterizzati dall'assenza di cicli. Le decisioni finali sono rappresentate dai nodi foglia, cioè nodi senza archi uscenti.
+Non appena si presenta la necessità di prendere una decisione, l'albero viene percorso a partire dal suo nodo iniziale, detto radice. Viene percorso un arco piuttosto che un altro a seconda degli input che l'agente riceve, come la percezione del mondo esterno o il suo stato interno, ad esempio fame o stanchezza. Una volta arrivati al nodo foglia, la decisione è stata presa e si esegue l'azione designata, come mostrato in Figura \ref{fig:alberodecisionale}.
 
 % TODO: \usepackage{graphicx} required
 \begin{figure}[h]
@@ -58,7 +58,7 @@ Questi approcci hanno molti vantaggi: sono strutturalmente semplici, possono ess
 
 \section{Gli LLM nei videogiochi: opportunità e sfide}
 
-L'intelligenza artificiale generativa e i Large Language Models rappresentano uno dei più grandi risultati dell'informatica moderna. Ormai gli LLM si sono introdotti nella maggior parte degli ambiti, lavorativi e non. Gli LLM sono modelli linguistici addestrati su enormi quantità di dati, che generano principalmente testo, ma si sta puntando sempre di più verso modelli General Purpose, in grado di generare anche immagini, audio, video e altro ancora.
+L’intelligenza artificiale generativa e i Large Language Models rappresentano uno dei più grandi risultati dell’informatica moderna, trovando ormai applicazione nella quasi totalità degli ambiti tecnologici e lavorativi. Basati su architetture a reti neurali focalizzate sull'elaborazione e sulla generazione di linguaggio naturale, gli LLM si sono imposti non più come semplici strumenti di scrittura, ma come potenti motori di ragionamento, pianificazione e controllo.
 
 \subsection{LLM come strumenti per lo sviluppo di videogiochi}
 
@@ -515,6 +515,26 @@ L'adattabilità del sistema è stata valutata osservando il comportamento del me
 \subsection{Latenza}
 
 La latenza misura il tempo che intercorre tra l'invio della richiesta da Unity e la ricezione del piano generato dal server. Nei test condotti, la latenza media per la generazione di un piano si è attestata intorno ai 57 secondi. Questo valore è dominato dalle due chiamate all'LLM, una per il \texttt{Planner} e una per il\texttt{Builder}, che insieme occupano la maggior parte del tempo totale di risposta.
+
+La Tabella \ref{tab:latenza} mostra la latenza media per ogni nodo del grafo.
+
+\begin{table}[H]
+	\centering
+	\caption{Latenza media per nodo del grafo.}
+	\label{tab:latenza}
+	\begin{tabular}{|l|c|}
+		\hline
+		\textbf{Nodo} & \textbf{Tempo medio (s)} \\
+		\hline
+		Retrieval & [0.81] \\
+		Planner & [32.14] \\
+		Builder & [23.55] \\
+		Inspector & [0.02] \\
+		\hline
+		\textbf{Totale} & \textbf{56.52} \\
+		\hline
+	\end{tabular}
+\end{table}
 
 Un valore di latenza di questa entità non è compatibile con un utilizzo interattivo in tempo reale, ma risulta accettabile per una dimostrazione prototipale: la generazione del piano avviene in background mentre l'NPC completa il piano precedente, quindi il gioco non si blocca in attesa della risposta. Il valore dipende in larga misura dal modello linguistico utilizzato e dall'hardware su cui viene eseguito; modelli più piccoli o GPU dedicate potrebbero ridurre sensibilmente il tempo di risposta.
 
