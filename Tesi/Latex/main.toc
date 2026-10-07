@@ -16,7 +16,7 @@
 \contentsline {subsection}{\numberline {2.2.1}LLM come strumenti per lo sviluppo di videogiochi}{8}{subsection.2.2.1}%
 \contentsline {subsection}{\numberline {2.2.2}LLM per il controllo degli NPC}{9}{subsection.2.2.2}%
 \contentsline {subsection}{\numberline {2.2.3}Sfide e limiti degli LLM}{9}{subsection.2.2.3}%
-\contentsline {chapter}{\numberline {3}AmbraIA: dall'analisi del problema all'architettura"}{11}{chapter.3}%
+\contentsline {chapter}{\numberline {3}AmbraIA: dall'analisi del problema all'architettura}{11}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Specifica PEAS}{11}{section.3.1}%
 \contentsline {section}{\numberline {3.2}Caratteristiche dell'ambiente}{12}{section.3.2}%
 \contentsline {section}{\numberline {3.3}Analisi del problema}{13}{section.3.3}%
